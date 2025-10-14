@@ -1,4 +1,6 @@
-﻿namespace Maze
+﻿using System.Threading.Tasks;
+
+namespace Maze
 {
     public partial class Maze : Form
     {
@@ -7,6 +9,9 @@
         bool isWrite = false;
         HashSet<Point> prevBfsVisited = [];
         HashSet<Point> prevDfsVisited = [];
+
+        readonly string csvFilePath = Directory.GetCurrentDirectory() + @"\data\maze_data.csv";
+        readonly string csv2ndFilePath = Directory.GetCurrentDirectory() + @"\data\2_maze_data.csv";
 
         enum Direction
         {
@@ -27,19 +32,16 @@
         public Maze()
         {
             InitializeComponent();
-        }
-
-        public static void Delay(int ms)
-        {
-            DateTime dateTimeNow = DateTime.Now;
-            TimeSpan duration = new(0, 0, 0, 0, ms);
-            DateTime dateTimeAdd = dateTimeNow.Add(duration);
-            while (dateTimeAdd >= dateTimeNow)
+            if (!File.Exists(csvFilePath))
             {
-                System.Windows.Forms.Application.DoEvents();
-                dateTimeNow = DateTime.Now;
+                using StreamWriter sw = new(csvFilePath, append: false);
+                sw.WriteLine("Size,StraightTimePenalty,BFS,DFS,BFS_2nd,DFS_2nd");
             }
-            return;
+            if (!File.Exists(csv2ndFilePath))
+            {
+                using StreamWriter sw = new(csv2ndFilePath, append: false);
+                sw.WriteLine("Size,StraightTimePenalty,BFS,DFS,BFS_2nd,DFS_2nd");
+            }
         }
 
         /// <summary>
@@ -258,7 +260,7 @@
         /// </summary>
         /// <param name="player">이동 개체</param>
         /// <param name="clock">delay 시간</param>
-        private void SimulateMove(List<Player> player, int clock)
+        private async Task SimulateMove(List<Player> player, int clock)
         {
             int[] time = new int[player.Count];
             while (true)
@@ -276,7 +278,8 @@
                         mazeWall[nextLocation.X, nextLocation.Y].PlayerOn(player[i].Color.R, player[i].Color.G, player[i].Color.B);
                     }
                 }
-                Delay(clock);
+                await Task.Delay(clock);
+                // Delay(clock);
                 if (a == 0)
                 {
                     BfsTimeLabel.Text = "BFS : " + time[0] * clock / 1000.0 + " s";
@@ -436,9 +439,9 @@
         /// <param name="e"></param>
         private void Maze_SizeChanged(object sender, EventArgs e)
         {
-            if (this.Size.Width < 800)
+            if (this.Size.Width < 1200)
             {
-                this.Size = new(800, Size.Height);
+                this.Size = new(1200, Size.Height);
             }
             if (this.Size.Height < 800)
             {
@@ -467,42 +470,61 @@
         /// <param name="e"></param>
         private void RunButton_Click(object sender, EventArgs e)
         {
-            List<Player> players =
-            [
-                new(Color.Red),
-                new(Color.Blue)
-            ];
-            List<Point> bfs = StartBFS(players[0], mazeWall, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value);
-            List<Point> dfs = StartDFS(players[1], mazeWall, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value);
-            players[0] = SimulateMovement(players[0], bfs, mazeWall);
-            players[1] = SimulateMovement(players[1], dfs, mazeWall);
-            players[0].Path.RemoveAt(0); // 시작 위치 제외
-            players[1].Path.RemoveAt(0); // 시작 위치 제외
+            List<Player> players = [];
+            if (!DfsCheckBox.Checked && !BfsCheckBox.Checked)
+            {
+                MessageBox.Show("알고리즘을 선택해야 합니다.", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            if (DfsCheckBox.Checked)
+            {
+                Player player = new(Color.Blue);
+                List<Point> dfs = StartDFS(player, mazeWall, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value);
+                player = SimulateMovement(player, dfs, mazeWall);
+                player.Path.RemoveAt(0); // 시작 위치 제외
+                players.Add(player);
+            }
+            if (BfsCheckBox.Checked)
+            {
+                Player player = new(Color.Blue);
+                List<Point> bfs = StartBFS(player, mazeWall, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value);
+                player = SimulateMovement(player, bfs, mazeWall);
+                player.Path.RemoveAt(0); // 시작 위치 제외
+                players.Add(player);
+            }
             GenerateMazeButton.Enabled = false;
             RunButton.Enabled = false;
 
             if (isSecond)
             {
-                players.Add(new Player(Color.Red));
-                players.Add(new Player(Color.Blue));
-                List<Point> bfs2 = Start2ndBFS(players[2], mazeWall, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, prevDfsVisited);
-                List<Point> dfs2 = Start2ndDFS(players[3], mazeWall, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, prevBfsVisited);
-                players[2] = SimulateMovement(players[2], bfs2, mazeWall);
-                players[3] = SimulateMovement(players[3], dfs2, mazeWall);
-                players[2].Path.RemoveAt(0); // 시작 위치 제외
-                players[3].Path.RemoveAt(0); // 시작 위치 제외
+                if (DfsCheckBox.Checked)
+                {
+                    Player player = new(Color.Blue);
+                    List<Point> dfs = Start2ndDFS(player, mazeWall, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, prevDfsVisited);
+                    player = SimulateMovement(player, dfs, mazeWall);
+                    player.Path.RemoveAt(0); // 시작 위치 제외
+                    players.Add(player);
+                }
+                if (BfsCheckBox.Checked)
+                {
+                    Player player = new(Color.Blue);
+                    List<Point> bfs = Start2ndBFS(player, mazeWall, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, prevBfsVisited);
+                    player = SimulateMovement(player, bfs, mazeWall);
+                    player.Path.RemoveAt(0); // 시작 위치 제외
+                    players.Add(player);
+                }
             }
-            SimulateMove(players, (int)StraightTimePenaltyNumericUpDown.Value);
+            _ = SimulateMove(players, (int)StraightTimePenaltyNumericUpDown.Value);
 
             if (isWrite)
             {
                 if (!isSecond)
                 {
-                    WriteCsv(@"\data\maze_data.csv");
+                    WriteCsv(csvFilePath);
                 }
                 else
                 {
-                    WriteCsv(@"\data\2_maze_data.csv");
+                    WriteCsv(csv2ndFilePath);
                 }
             }
             GenerateMazeButton.Enabled = true;
@@ -519,18 +541,30 @@
                 return;
             }
 
-            decimal[] rowData = [(int)SizeNumericUpDown.Value, 
-                (int)StraightTimePenaltyNumericUpDown.Value, 
-                decimal.Parse(BfsTimeLabel.Text.Split(" ")[2]), 
-                decimal.Parse(DfsTimeLabel.Text.Split(" ")[2])]; ;
+            decimal[] rowData = [(int)SizeNumericUpDown.Value, (int)StraightTimePenaltyNumericUpDown.Value];
+            if (!BfsCheckBox.Checked)
+            {
+                BfsTimeLabel.Text = "BFS : ";
+            }
+            if (!DfsCheckBox.Checked)
+            {
+                DfsTimeLabel.Text = "DFS : ";
+            }
+            rowData = rowData.Append(decimal.Parse(BfsTimeLabel.Text.Split(" ")[2])).ToArray();
+            rowData = rowData.Append(decimal.Parse(DfsTimeLabel.Text.Split(" ")[2])).ToArray();
+
             if (isSecond)
             {
-                rowData = [(int)SizeNumericUpDown.Value, 
-                    (int)StraightTimePenaltyNumericUpDown.Value, 
-                    decimal.Parse(BfsTimeLabel.Text.Split(" ")[2]), 
-                    decimal.Parse(DfsTimeLabel.Text.Split(" ")[2]), 
-                    decimal.Parse(Bfs2ndTimeLabel.Text.Split(" ")[2]), 
-                    decimal.Parse(Dfs2ndTimeLabel.Text.Split(" ")[2])];
+                if (!BfsCheckBox.Checked)
+                {
+                    Bfs2ndTimeLabel.Text = "BFS : ";
+                }
+                if (!DfsCheckBox.Checked)
+                {
+                    Dfs2ndTimeLabel.Text = "DFS : ";
+                }
+                rowData = rowData.Append(decimal.Parse(Bfs2ndTimeLabel.Text.Split(" ")[2])).ToArray();
+                rowData = rowData.Append(decimal.Parse(Dfs2ndTimeLabel.Text.Split(" ")[2])).ToArray();
             }
 
             using StreamWriter sw = new(csvFilePath, append: true);

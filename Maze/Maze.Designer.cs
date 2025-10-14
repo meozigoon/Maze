@@ -48,11 +48,17 @@
             Run2ndGroupBox = new GroupBox();
             WriteButton = new Button();
             CheckWriteLabel = new Label();
+            DfsCheckBox = new CheckBox();
+            groupBox1 = new GroupBox();
+            checkBox4 = new CheckBox();
+            BfsCheckBox = new CheckBox();
+            checkBox2 = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)SizeNumericUpDown).BeginInit();
             ((System.ComponentModel.ISupportInitialize)StraightTimePenaltyNumericUpDown).BeginInit();
             ((System.ComponentModel.ISupportInitialize)LoopLimitNumericUpDown).BeginInit();
             LoopGroupBox.SuspendLayout();
             Run2ndGroupBox.SuspendLayout();
+            groupBox1.SuspendLayout();
             SuspendLayout();
             // 
             // SizeNumericUpDown
@@ -271,12 +277,66 @@
             CheckWriteLabel.TabIndex = 22;
             CheckWriteLabel.Text = "False";
             // 
+            // DfsCheckBox
+            // 
+            DfsCheckBox.AutoSize = true;
+            DfsCheckBox.Location = new Point(6, 33);
+            DfsCheckBox.Name = "DfsCheckBox";
+            DfsCheckBox.Size = new Size(70, 29);
+            DfsCheckBox.TabIndex = 23;
+            DfsCheckBox.Text = "DFS";
+            DfsCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // groupBox1
+            // 
+            groupBox1.Controls.Add(checkBox4);
+            groupBox1.Controls.Add(BfsCheckBox);
+            groupBox1.Controls.Add(checkBox2);
+            groupBox1.Controls.Add(DfsCheckBox);
+            groupBox1.Location = new Point(919, 5);
+            groupBox1.Name = "groupBox1";
+            groupBox1.Size = new Size(269, 108);
+            groupBox1.TabIndex = 24;
+            groupBox1.TabStop = false;
+            groupBox1.Text = "Algorithms";
+            // 
+            // checkBox4
+            // 
+            checkBox4.AutoSize = true;
+            checkBox4.Location = new Point(137, 71);
+            checkBox4.Name = "checkBox4";
+            checkBox4.Size = new Size(125, 29);
+            checkBox4.TabIndex = 26;
+            checkBox4.Text = "checkBox4";
+            checkBox4.UseVisualStyleBackColor = true;
+            // 
+            // BfsCheckBox
+            // 
+            BfsCheckBox.AutoSize = true;
+            BfsCheckBox.Location = new Point(137, 33);
+            BfsCheckBox.Name = "BfsCheckBox";
+            BfsCheckBox.Size = new Size(68, 29);
+            BfsCheckBox.TabIndex = 25;
+            BfsCheckBox.Text = "BFS";
+            BfsCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // checkBox2
+            // 
+            checkBox2.AutoSize = true;
+            checkBox2.Location = new Point(6, 71);
+            checkBox2.Name = "checkBox2";
+            checkBox2.Size = new Size(125, 29);
+            checkBox2.TabIndex = 24;
+            checkBox2.Text = "checkBox2";
+            checkBox2.UseVisualStyleBackColor = true;
+            // 
             // Maze
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.White;
-            ClientSize = new Size(1062, 570);
+            ClientSize = new Size(1200, 800);
+            Controls.Add(groupBox1);
             Controls.Add(CheckWriteLabel);
             Controls.Add(WriteButton);
             Controls.Add(Run2ndGroupBox);
@@ -300,6 +360,8 @@
             LoopGroupBox.PerformLayout();
             Run2ndGroupBox.ResumeLayout(false);
             Run2ndGroupBox.PerformLayout();
+            groupBox1.ResumeLayout(false);
+            groupBox1.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -326,5 +388,10 @@
         private GroupBox Run2ndGroupBox;
         private Button WriteButton;
         private Label CheckWriteLabel;
+        private CheckBox DfsCheckBox;
+        private GroupBox groupBox1;
+        private CheckBox checkBox4;
+        private CheckBox BfsCheckBox;
+        private CheckBox checkBox2;
     }
 }
