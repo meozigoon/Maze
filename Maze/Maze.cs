@@ -65,7 +65,8 @@
 
 				for (int i = 0; i < 4; i++)
 				{
-					if (!mazeCells[current.X, current.Y].isNotConnected[i] && !mazeCells[current.X, current.Y].closedSides.Contains((MazeCell.Closed)i))
+					if (!mazeCells[current.X, current.Y].isNotConnected[i] && 
+						!mazeCells[current.X, current.Y].closedSides.Contains((MazeCell.Closed)i))
 					{
 						Point next = new(current.X + directions[i].X, current.Y + directions[i].Y);
 						if (!visited.Contains(next))
@@ -117,7 +118,8 @@
 
 				for (int i = 0; i < 4; i++)
 				{
-					if (!mazeCells[current.X, current.Y].isNotConnected[i] && !mazeCells[current.X, current.Y].closedSides.Contains((MazeCell.Closed)i))
+					if (!mazeCells[current.X, current.Y].isNotConnected[i] && 
+						!mazeCells[current.X, current.Y].closedSides.Contains((MazeCell.Closed)i))
 					{
 						Point next = new(current.X + directions[i].X, current.Y + directions[i].Y);
 						if (!visited.Contains(next) && visited1st.Contains(next))
@@ -162,7 +164,8 @@
 
 				for (int i = 0; i < 4; i++)
 				{
-					if (!mazeCells[current.X, current.Y].isNotConnected[i] && !mazeCells[current.X, current.Y].closedSides.Contains((MazeCell.Closed)i))
+					if (!mazeCells[current.X, current.Y].isNotConnected[i] && 
+						!mazeCells[current.X, current.Y].closedSides.Contains((MazeCell.Closed)i))
 					{
 						Point next = new(current.X + directions[i].X, current.Y + directions[i].Y);
 						if (!visited.Contains(next))
@@ -213,7 +216,8 @@
 
 				for (int i = 0; i < 4; i++)
 				{
-					if (!mazeCells[current.X, current.Y].isNotConnected[i] && !mazeCells[current.X, current.Y].closedSides.Contains((MazeCell.Closed)i))
+					if (!mazeCells[current.X, current.Y].isNotConnected[i] && 
+						!mazeCells[current.X, current.Y].closedSides.Contains((MazeCell.Closed)i))
 					{
 						Point next = new(current.X + directions[i].X, current.Y + directions[i].Y);
 						if (!visited.Contains(next) && visited1st.Contains(next))
@@ -236,11 +240,56 @@
 		/// <param name="width">너비</param>
 		/// <param name="height">높이</param>
 		/// <returns>이동 경로</returns>
-		private static List<Point> StartDijkstra(Player player, MazeCell[,] mazeCells, int width, int height) // TODO: Implementation
+		private List<Point> StartDijkstra(Player player, MazeCell[,] mazeCells, int width, int height)
 		{
-			List<Point> dijkstraMoves = [];
+            PriorityQueue<Point, int> dijkstraPriorityQueue = new();
+            Dictionary<Point, int> distances = [];
+            HashSet<Point> visited = [];
+            List<Point> dijkstraMoves = [];
 
-			return dijkstraMoves;
+            Point start = player.Location;
+            distances[start] = 0;
+            dijkstraPriorityQueue.Enqueue(start, 0);
+
+            while (dijkstraPriorityQueue.Count > 0)
+            {
+                Point current = dijkstraPriorityQueue.Dequeue();
+
+                if (!visited.Add(current))
+                {
+                    continue;
+                }
+
+                dijkstraMoves.Add(current);
+
+                if (current == new Point(width - 1, height - 1))
+                {
+                    break;
+                }
+
+                for (int i = 0; i < 4; i++)
+                {
+                    if (!mazeCells[current.X, current.Y].isNotConnected[i] && 
+						!mazeCells[current.X, current.Y].closedSides.Contains((MazeCell.Closed)i))
+                    {
+                        Point next = new(current.X + directions[i].X, current.Y + directions[i].Y);
+                        int newDistance = distances[current] + 1;
+
+                        if (!distances.TryGetValue(next, out int existingDistance) || newDistance < existingDistance)
+                        {
+                            distances[next] = newDistance;
+                            dijkstraPriorityQueue.Enqueue(next, newDistance);
+                        }
+                    }
+                }
+            }
+
+            if (isSecond)
+            {
+                prevDijkstraVisited = visited;
+            }
+
+            return dijkstraMoves;
         }
 
         /// <summary>
@@ -252,11 +301,62 @@
         /// <param name="height">높이</param>
         /// <param name="visited1st">1차 visited</param>
         /// <returns>이동 경로</returns>
-        private static List<Point> Start2ndDijkstra(Player player, MazeCell[,] mazeCells, int width, int height, HashSet<Point> visited1st) // TODO: Implementation
+        private static List<Point> Start2ndDijkstra(Player player, MazeCell[,] mazeCells, int width, int height, HashSet<Point> visited1st)
 		{
-			List<Point> dijkstraMoves = [];
+            PriorityQueue<Point, int> priorityQueue = new();
+            Dictionary<Point, int> distances = [];
+            HashSet<Point> visited = [];
+            List<Point> dijkstraMoves = [];
 
-			return dijkstraMoves;
+            Point start = player.Location;
+            if (!visited1st.Contains(start))
+            {
+                return dijkstraMoves;
+            }
+
+            distances[start] = 0;
+            priorityQueue.Enqueue(start, 0);
+
+            while (priorityQueue.Count > 0)
+            {
+                Point current = priorityQueue.Dequeue();
+
+                if (!visited1st.Contains(current) || !visited.Add(current))
+                {
+                    continue;
+                }
+
+                dijkstraMoves.Add(current);
+
+                if (current == new Point(width - 1, height - 1))
+                {
+                    break;
+                }
+
+                for (int i = 0; i < 4; i++)
+                {
+                    if (!mazeCells[current.X, current.Y].isNotConnected[i] &&
+                            !mazeCells[current.X, current.Y].closedSides.Contains((MazeCell.Closed)i))
+                    {
+                        Point next = new(current.X + directions[i].X, current.Y + directions[i].Y);
+
+                        if (!visited1st.Contains(next))
+                        {
+                            continue;
+                        }
+
+                        int newDistance = distances[current] + 1;
+
+                        if (!distances.TryGetValue(next, out int existingDistance) || newDistance < existingDistance)
+                        {
+                            distances[next] = newDistance;
+                            priorityQueue.Enqueue(next, newDistance);
+                        }
+                    }
+                }
+            }
+
+            return dijkstraMoves;
         }
 
         /// <summary>
