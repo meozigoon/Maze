@@ -52,9 +52,10 @@
             CheckWriteLabel = new Label();
             DfsCheckBox = new CheckBox();
             groupBox1 = new GroupBox();
-            checkBox4 = new CheckBox();
             BfsCheckBox = new CheckBox();
-            checkBox2 = new CheckBox();
+            DijkstraCheckBox = new CheckBox();
+            DijkstraTimeLabel = new Label();
+            Dijkstra2ndTimeLabel = new Label();
             ((System.ComponentModel.ISupportInitialize)SizeNumericUpDown).BeginInit();
             ((System.ComponentModel.ISupportInitialize)StraightTimePenaltyNumericUpDown).BeginInit();
             ((System.ComponentModel.ISupportInitialize)RotationPenaltyNumericUpDown).BeginInit();
@@ -150,19 +151,19 @@
             StraightTimePenaltyNumericUpDown.Size = new Size(118, 31);
             StraightTimePenaltyNumericUpDown.TabIndex = 7;
             StraightTimePenaltyNumericUpDown.Value = new decimal(new int[] { 100, 0, 0, 0 });
-            //
+            // 
             // RotationPenaltyLabel
-            //
+            // 
             RotationPenaltyLabel.AutoSize = true;
             RotationPenaltyLabel.Location = new Point(600, 54);
             RotationPenaltyLabel.Margin = new Padding(2, 0, 2, 0);
             RotationPenaltyLabel.Name = "RotationPenaltyLabel";
-            RotationPenaltyLabel.Size = new Size(148, 25);
+            RotationPenaltyLabel.Size = new Size(136, 25);
             RotationPenaltyLabel.TabIndex = 8;
             RotationPenaltyLabel.Text = "회전페널티(ms)";
-            //
+            // 
             // RotationPenaltyNumericUpDown
-            //
+            // 
             RotationPenaltyNumericUpDown.Location = new Point(776, 52);
             RotationPenaltyNumericUpDown.Margin = new Padding(2);
             RotationPenaltyNumericUpDown.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
@@ -187,7 +188,7 @@
             RunLoopButton.Location = new Point(8, 90);
             RunLoopButton.Margin = new Padding(2);
             RunLoopButton.Name = "RunLoopButton";
-            RunLoopButton.Size = new Size(90, 36);
+            RunLoopButton.Size = new Size(117, 36);
             RunLoopButton.TabIndex = 11;
             RunLoopButton.Text = "Go";
             RunLoopButton.UseVisualStyleBackColor = true;
@@ -200,7 +201,7 @@
             LoopLimitNumericUpDown.Maximum = new decimal(new int[] { 200, 0, 0, 0 });
             LoopLimitNumericUpDown.Minimum = new decimal(new int[] { 2, 0, 0, 0 });
             LoopLimitNumericUpDown.Name = "LoopLimitNumericUpDown";
-            LoopLimitNumericUpDown.Size = new Size(90, 31);
+            LoopLimitNumericUpDown.Size = new Size(117, 31);
             LoopLimitNumericUpDown.TabIndex = 12;
             LoopLimitNumericUpDown.Value = new decimal(new int[] { 10, 0, 0, 0 });
             LoopLimitNumericUpDown.KeyDown += LoopLimitNumericUpDown_KeyDown;
@@ -217,7 +218,7 @@
             // 
             // Check2ndRunButton
             // 
-            Check2ndRunButton.Location = new Point(8, 76);
+            Check2ndRunButton.Location = new Point(8, 109);
             Check2ndRunButton.Name = "Check2ndRunButton";
             Check2ndRunButton.Size = new Size(87, 34);
             Check2ndRunButton.TabIndex = 14;
@@ -228,7 +229,7 @@
             // Check2ndLabel
             // 
             Check2ndLabel.AutoSize = true;
-            Check2ndLabel.Location = new Point(8, 113);
+            Check2ndLabel.Location = new Point(8, 146);
             Check2ndLabel.Margin = new Padding(2, 0, 2, 0);
             Check2ndLabel.Name = "Check2ndLabel";
             Check2ndLabel.Size = new Size(52, 25);
@@ -261,22 +262,23 @@
             LoopGroupBox.Controls.Add(LoopLimitNumericUpDown);
             LoopGroupBox.Controls.Add(RunLoopButton);
             LoopGroupBox.Controls.Add(LoopCountLabel);
-            LoopGroupBox.Location = new Point(9, 168);
+            LoopGroupBox.Location = new Point(9, 187);
             LoopGroupBox.Name = "LoopGroupBox";
-            LoopGroupBox.Size = new Size(117, 161);
+            LoopGroupBox.Size = new Size(130, 161);
             LoopGroupBox.TabIndex = 19;
             LoopGroupBox.TabStop = false;
             LoopGroupBox.Text = "Loop";
             // 
             // Run2ndGroupBox
             // 
+            Run2ndGroupBox.Controls.Add(Dijkstra2ndTimeLabel);
             Run2ndGroupBox.Controls.Add(Bfs2ndTimeLabel);
             Run2ndGroupBox.Controls.Add(Dfs2ndTimeLabel);
             Run2ndGroupBox.Controls.Add(Check2ndRunButton);
             Run2ndGroupBox.Controls.Add(Check2ndLabel);
-            Run2ndGroupBox.Location = new Point(9, 347);
+            Run2ndGroupBox.Location = new Point(9, 366);
             Run2ndGroupBox.Name = "Run2ndGroupBox";
-            Run2ndGroupBox.Size = new Size(117, 147);
+            Run2ndGroupBox.Size = new Size(130, 179);
             Run2ndGroupBox.TabIndex = 20;
             Run2ndGroupBox.TabStop = false;
             Run2ndGroupBox.Text = "2nd";
@@ -304,7 +306,7 @@
             // DfsCheckBox
             // 
             DfsCheckBox.AutoSize = true;
-            DfsCheckBox.Location = new Point(6, 33);
+            DfsCheckBox.Location = new Point(6, 43);
             DfsCheckBox.Name = "DfsCheckBox";
             DfsCheckBox.Size = new Size(70, 29);
             DfsCheckBox.TabIndex = 23;
@@ -313,46 +315,55 @@
             // 
             // groupBox1
             // 
-            groupBox1.Controls.Add(checkBox4);
             groupBox1.Controls.Add(BfsCheckBox);
-            groupBox1.Controls.Add(checkBox2);
+            groupBox1.Controls.Add(DijkstraCheckBox);
             groupBox1.Controls.Add(DfsCheckBox);
             groupBox1.Location = new Point(919, 5);
             groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(269, 108);
+            groupBox1.Size = new Size(269, 78);
             groupBox1.TabIndex = 24;
             groupBox1.TabStop = false;
             groupBox1.Text = "Algorithms";
             // 
-            // checkBox4
-            // 
-            checkBox4.AutoSize = true;
-            checkBox4.Location = new Point(137, 71);
-            checkBox4.Name = "checkBox4";
-            checkBox4.Size = new Size(125, 29);
-            checkBox4.TabIndex = 26;
-            checkBox4.Text = "checkBox4";
-            checkBox4.UseVisualStyleBackColor = true;
-            // 
             // BfsCheckBox
             // 
             BfsCheckBox.AutoSize = true;
-            BfsCheckBox.Location = new Point(137, 33);
+            BfsCheckBox.Location = new Point(82, 43);
             BfsCheckBox.Name = "BfsCheckBox";
             BfsCheckBox.Size = new Size(68, 29);
             BfsCheckBox.TabIndex = 25;
             BfsCheckBox.Text = "BFS";
             BfsCheckBox.UseVisualStyleBackColor = true;
             // 
-            // checkBox2
+            // DijkstraCheckBox
             // 
-            checkBox2.AutoSize = true;
-            checkBox2.Location = new Point(6, 71);
-            checkBox2.Name = "checkBox2";
-            checkBox2.Size = new Size(125, 29);
-            checkBox2.TabIndex = 24;
-            checkBox2.Text = "checkBox2";
-            checkBox2.UseVisualStyleBackColor = true;
+            DijkstraCheckBox.AutoSize = true;
+            DijkstraCheckBox.Location = new Point(156, 43);
+            DijkstraCheckBox.Name = "DijkstraCheckBox";
+            DijkstraCheckBox.Size = new Size(97, 29);
+            DijkstraCheckBox.TabIndex = 24;
+            DijkstraCheckBox.Text = "Dijkstra";
+            DijkstraCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // DijkstraTimeLabel
+            // 
+            DijkstraTimeLabel.AutoSize = true;
+            DijkstraTimeLabel.Location = new Point(9, 149);
+            DijkstraTimeLabel.Margin = new Padding(2, 0, 2, 0);
+            DijkstraTimeLabel.Name = "DijkstraTimeLabel";
+            DijkstraTimeLabel.Size = new Size(81, 25);
+            DijkstraTimeLabel.TabIndex = 25;
+            DijkstraTimeLabel.Text = "Dijkstra: ";
+            // 
+            // Dijkstra2ndTimeLabel
+            // 
+            Dijkstra2ndTimeLabel.AutoSize = true;
+            Dijkstra2ndTimeLabel.Location = new Point(8, 80);
+            Dijkstra2ndTimeLabel.Margin = new Padding(2, 0, 2, 0);
+            Dijkstra2ndTimeLabel.Name = "Dijkstra2ndTimeLabel";
+            Dijkstra2ndTimeLabel.Size = new Size(81, 25);
+            Dijkstra2ndTimeLabel.TabIndex = 18;
+            Dijkstra2ndTimeLabel.Text = "Dijkstra: ";
             // 
             // Maze
             // 
@@ -360,6 +371,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.White;
             ClientSize = new Size(1200, 800);
+            Controls.Add(DijkstraTimeLabel);
             Controls.Add(groupBox1);
             Controls.Add(CheckWriteLabel);
             Controls.Add(WriteButton);
@@ -421,6 +433,8 @@
         private GroupBox groupBox1;
         private CheckBox checkBox4;
         private CheckBox BfsCheckBox;
-        private CheckBox checkBox2;
+        private CheckBox DijkstraCheckBox;
+        private Label Dijkstra2ndTimeLabel;
+        private Label DijkstraTimeLabel;
     }
 }

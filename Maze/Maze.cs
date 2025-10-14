@@ -7,8 +7,9 @@
 		bool isWrite = false;
 		HashSet<Point> prevBfsVisited = [];
 		HashSet<Point> prevDfsVisited = [];
+		HashSet<Point> prevDijkstraVisited = [];
 
-		readonly string dataFolderPath = Directory.GetCurrentDirectory() + @"\data";
+        readonly string dataFolderPath = Directory.GetCurrentDirectory() + @"\data";
 		readonly string csvDataFilePath = Directory.GetCurrentDirectory() + @"\data\maze_data.csv";
 		readonly string csv2ndDataFilePath = Directory.GetCurrentDirectory() + @"\data\2_maze_data.csv";
 
@@ -228,13 +229,44 @@
 		}
 
 		/// <summary>
-		/// 움직임 시각화
+		/// 다익스트라 탐색
 		/// </summary>
 		/// <param name="player">이동 개체</param>
-		/// <param name="moveSequence">이동 경로</param>
 		/// <param name="mazeWalls">미로 배열</param>
-		/// <returns>개체</returns>
-		private static Player SimulateMovement(Player player, List<Point> moveSequence, MazeWall[,] mazeWalls)
+		/// <param name="width">너비</param>
+		/// <param name="height">높이</param>
+		/// <returns>이동 경로</returns>
+		private static List<Point> StartDijkstra(Player player, MazeWall[,] mazeWalls, int width, int height) // TODO: Implementation
+		{
+			List<Point> dijkstraMoves = [];
+
+			return dijkstraMoves;
+        }
+
+        /// <summary>
+        /// 2차 다익스트라 탐색
+        /// </summary>
+        /// <param name="player">이동 개체</param>
+        /// <param name="mazeWalls">미로 배열</param>
+        /// <param name="width">너비</param>
+        /// <param name="height">높이</param>
+        /// <param name="visited1st">1차 visited</param>
+        /// <returns>이동 경로</returns>
+        private static List<Point> Start2ndDijkstra(Player player, MazeWall[,] mazeWalls, int width, int height, HashSet<Point> visited1st) // TODO: Implementation
+		{
+			List<Point> dijkstraMoves = [];
+
+			return dijkstraMoves;
+        }
+
+        /// <summary>
+        /// 움직임 시각화
+        /// </summary>
+        /// <param name="player">이동 개체</param>
+        /// <param name="moveSequence">이동 경로</param>
+        /// <param name="mazeWalls">미로 배열</param>
+        /// <returns>개체</returns>
+        private static Player SimulateMovement(Player player, List<Point> moveSequence, MazeWall[,] mazeWalls)
 		{
 			for (int moveIndex = 0; moveIndex < moveSequence.Count; moveIndex++)
 			{
@@ -293,17 +325,20 @@
 				{
 					BfsTimeLabel.Text = "BFS : " + (BfsCheckBox.Checked ? (time["BFS"] / 1000.0 + " s") : " ");
 					DfsTimeLabel.Text = "DFS : " + (DfsCheckBox.Checked ? (time["DFS"] / 1000.0 + " s") : " ");
+					DijkstraTimeLabel.Text = "Dijkstra: " + (DijkstraCheckBox.Checked ? (time["Dijkstra"] / 1000.0 + " s") : " ");
 
-					if (isSecond)
+                    if (isSecond)
 					{
 						Bfs2ndTimeLabel.Text = "BFS : " + time["BFS2"] / 1000.0 + " s";
 						Dfs2ndTimeLabel.Text = "DFS : " + time["DFS2"] / 1000.0 + " s";
-					}
+						Dijkstra2ndTimeLabel.Text = "Dijkstra: " + (DijkstraCheckBox.Checked ? (time["Dijkstra2"] / 1000.0 + " s") : " ");
+                    }
 					else
 					{
 						Bfs2ndTimeLabel.Text = "BFS : ";
 						Dfs2ndTimeLabel.Text = "DFS : ";
-					}
+						Dijkstra2ndTimeLabel.Text = "Dijkstra: ";
+                    }
 					break; // 이동할 수 없을 때 종료
 				}
 			}
@@ -505,6 +540,15 @@
 				player.Name = "BFS";
 				players.Add(player);
 			}
+			if (DijkstraCheckBox.Checked)
+			{
+                Player player = new(Color.Green);
+                List<Point> dijkstra = StartDijkstra(player, mazeWall, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value);
+                player = SimulateMovement(player, dijkstra, mazeWall);
+                player.Path.RemoveAt(0); // 시작 위치 제외
+                player.Name = "Dijkstra";
+                players.Add(player);
+            }
 			GenerateMazeButton.Enabled = false;
 			RunButton.Enabled = false;
 
@@ -528,7 +572,16 @@
 					player.Name = "BFS2";
 					players.Add(player);
 				}
-			}
+				if (DijkstraCheckBox.Checked)
+				{
+					Player player = new(Color.Green);
+					List<Point> dijkstra = Start2ndDijkstra(player, mazeWall, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, prevDijkstraVisited);
+					player = SimulateMovement(player, dijkstra, mazeWall);
+					player.Path.RemoveAt(0); // 시작 위치 제외
+					player.Name = "Dijkstra2";
+					players.Add(player);
+                }
+            }
             SimulateMove(players, (int)StraightTimePenaltyNumericUpDown.Value, (int)RotationPenaltyNumericUpDown.Value);
 
 			if (isWrite)
@@ -576,14 +629,16 @@
 				(int)RotationPenaltyNumericUpDown.Value,
 				fork, deadEnd,
                 decimal.Parse(BfsTimeLabel.Text.Split(" ")[2]),
-				decimal.Parse(DfsTimeLabel.Text.Split(" ")[2])
-			];
+				decimal.Parse(DfsTimeLabel.Text.Split(" ")[2]),
+				decimal.Parse(DijkstraTimeLabel.Text.Split(" ")[1])
+            ];
 
 			if (isSecond)
 			{
 				rowData = rowData.Append(decimal.Parse(Bfs2ndTimeLabel.Text.Split(" ")[2])).ToArray();
 				rowData = rowData.Append(decimal.Parse(Dfs2ndTimeLabel.Text.Split(" ")[2])).ToArray();
-			}
+                rowData = rowData.Append(decimal.Parse(Dijkstra2ndTimeLabel.Text.Split(" ")[1])).ToArray();
+            }
 
 			try
 			{
@@ -686,12 +741,12 @@
 					if (!File.Exists(csvDataFilePath))
 					{
 						using StreamWriter sw = new(csvDataFilePath, append: false);
-						sw.WriteLine("Size,StraightTimePenalty,RotationPenalty,Fork,DeadEnd,BFS,DFS");
+						sw.WriteLine("Size,StraightTimePenalty,RotationPenalty,Fork,DeadEnd,BFS,DFS,Dijkstra");
 					}
 					if (!File.Exists(csv2ndDataFilePath))
 					{
 						using StreamWriter sw = new(csv2ndDataFilePath, append: false);
-						sw.WriteLine("Size,StraightTimePenalty,RotationPenalty,Fork,DeadEnd,BFS,DFS,BFS_2nd,DFS_2nd");
+						sw.WriteLine("Size,StraightTimePenalty,RotationPenalty,Fork,DeadEnd,BFS,DFS,Dijkstra,BFS_2nd,DFS_2nd,Dijkstra_2nd");
 					}
 				}
 				catch (Exception ex)
