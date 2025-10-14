@@ -475,11 +475,19 @@
             }
             if (BfsCheckBox.Checked)
             {
-                Player player = new(Color.Blue);
+                Player player = new(Color.Red);
                 List<Point> bfs = StartBFS(player, mazeWall, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value);
                 player = SimulateMovement(player, bfs, mazeWall);
                 player.Path.RemoveAt(0); // 시작 위치 제외
                 players.Add(player);
+            }
+            if (!BfsCheckBox.Checked)
+            {
+                BfsTimeLabel.Text = "BFS : ";
+            }
+            if (!DfsCheckBox.Checked)
+            {
+                DfsTimeLabel.Text = "DFS : ";
             }
             GenerateMazeButton.Enabled = false;
             RunButton.Enabled = false;
@@ -496,11 +504,19 @@
                 }
                 if (BfsCheckBox.Checked)
                 {
-                    Player player = new(Color.Blue);
+                    Player player = new(Color.Red);
                     List<Point> bfs = Start2ndBFS(player, mazeWall, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, prevBfsVisited);
                     player = SimulateMovement(player, bfs, mazeWall);
                     player.Path.RemoveAt(0); // 시작 위치 제외
                     players.Add(player);
+                }
+                if (!BfsCheckBox.Checked)
+                {
+                    Bfs2ndTimeLabel.Text = "BFS : ";
+                }
+                if (!DfsCheckBox.Checked)
+                {
+                    Dfs2ndTimeLabel.Text = "DFS : ";
                 }
             }
             _ = SimulateMove(players, (int)StraightTimePenaltyNumericUpDown.Value);
@@ -531,27 +547,11 @@
             }
 
             decimal[] rowData = [(int)SizeNumericUpDown.Value, (int)StraightTimePenaltyNumericUpDown.Value];
-            if (!BfsCheckBox.Checked)
-            {
-                BfsTimeLabel.Text = "BFS : ";
-            }
-            if (!DfsCheckBox.Checked)
-            {
-                DfsTimeLabel.Text = "DFS : ";
-            }
             rowData = rowData.Append(decimal.Parse(BfsTimeLabel.Text.Split(" ")[2])).ToArray();
             rowData = rowData.Append(decimal.Parse(DfsTimeLabel.Text.Split(" ")[2])).ToArray();
 
             if (isSecond)
             {
-                if (!BfsCheckBox.Checked)
-                {
-                    Bfs2ndTimeLabel.Text = "BFS : ";
-                }
-                if (!DfsCheckBox.Checked)
-                {
-                    Dfs2ndTimeLabel.Text = "DFS : ";
-                }
                 rowData = rowData.Append(decimal.Parse(Bfs2ndTimeLabel.Text.Split(" ")[2])).ToArray();
                 rowData = rowData.Append(decimal.Parse(Dfs2ndTimeLabel.Text.Split(" ")[2])).ToArray();
             }
