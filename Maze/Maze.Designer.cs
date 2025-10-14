@@ -36,6 +36,8 @@
             MazeSizeLabel = new Label();
             StraightTimePenalty = new Label();
             StraightTimePenaltyNumericUpDown = new NumericUpDown();
+            RotationPenaltyLabel = new Label();
+            RotationPenaltyNumericUpDown = new NumericUpDown();
             LoopLimitLabel = new Label();
             RunLoopButton = new Button();
             LoopLimitNumericUpDown = new NumericUpDown();
@@ -55,6 +57,7 @@
             checkBox2 = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)SizeNumericUpDown).BeginInit();
             ((System.ComponentModel.ISupportInitialize)StraightTimePenaltyNumericUpDown).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)RotationPenaltyNumericUpDown).BeginInit();
             ((System.ComponentModel.ISupportInitialize)LoopLimitNumericUpDown).BeginInit();
             LoopGroupBox.SuspendLayout();
             Run2ndGroupBox.SuspendLayout();
@@ -147,6 +150,27 @@
             StraightTimePenaltyNumericUpDown.Size = new Size(118, 31);
             StraightTimePenaltyNumericUpDown.TabIndex = 7;
             StraightTimePenaltyNumericUpDown.Value = new decimal(new int[] { 100, 0, 0, 0 });
+            //
+            // RotationPenaltyLabel
+            //
+            RotationPenaltyLabel.AutoSize = true;
+            RotationPenaltyLabel.Location = new Point(600, 54);
+            RotationPenaltyLabel.Margin = new Padding(2, 0, 2, 0);
+            RotationPenaltyLabel.Name = "RotationPenaltyLabel";
+            RotationPenaltyLabel.Size = new Size(148, 25);
+            RotationPenaltyLabel.TabIndex = 8;
+            RotationPenaltyLabel.Text = "회전페널티(ms)";
+            //
+            // RotationPenaltyNumericUpDown
+            //
+            RotationPenaltyNumericUpDown.Location = new Point(776, 52);
+            RotationPenaltyNumericUpDown.Margin = new Padding(2);
+            RotationPenaltyNumericUpDown.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
+            RotationPenaltyNumericUpDown.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            RotationPenaltyNumericUpDown.Name = "RotationPenaltyNumericUpDown";
+            RotationPenaltyNumericUpDown.Size = new Size(118, 31);
+            RotationPenaltyNumericUpDown.TabIndex = 9;
+            RotationPenaltyNumericUpDown.Value = new decimal(new int[] { 150, 0, 0, 0 });
             // 
             // LoopLimitLabel
             // 
@@ -343,6 +367,8 @@
             Controls.Add(LoopGroupBox);
             Controls.Add(StraightTimePenaltyNumericUpDown);
             Controls.Add(StraightTimePenalty);
+            Controls.Add(RotationPenaltyNumericUpDown);
+            Controls.Add(RotationPenaltyLabel);
             Controls.Add(MazeSizeLabel);
             Controls.Add(DfsTimeLabel);
             Controls.Add(BfsTimeLabel);
@@ -355,6 +381,7 @@
             SizeChanged += Maze_SizeChanged;
             ((System.ComponentModel.ISupportInitialize)SizeNumericUpDown).EndInit();
             ((System.ComponentModel.ISupportInitialize)StraightTimePenaltyNumericUpDown).EndInit();
+            ((System.ComponentModel.ISupportInitialize)RotationPenaltyNumericUpDown).EndInit();
             ((System.ComponentModel.ISupportInitialize)LoopLimitNumericUpDown).EndInit();
             LoopGroupBox.ResumeLayout(false);
             LoopGroupBox.PerformLayout();
@@ -376,6 +403,8 @@
         private Label MazeSizeLabel;
         private Label StraightTimePenalty;
         private NumericUpDown StraightTimePenaltyNumericUpDown;
+        private Label RotationPenaltyLabel;
+        private NumericUpDown RotationPenaltyNumericUpDown;
         private Label LoopLimitLabel;
         private Button RunLoopButton;
         private NumericUpDown LoopLimitNumericUpDown;
