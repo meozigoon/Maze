@@ -3,11 +3,11 @@ import csv
 import copy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import torch
 from torch import nn
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader, TensorDataset, WeightedRandomSampler
 
 
 FEATURE_COLUMNS = [
@@ -17,7 +17,7 @@ FEATURE_COLUMNS = [
     "Fork",
     "DeadEnd",
 ]
-TARGET_COLUMNS = ["BFS", "DFS"]
+TARGET_COLUMNS = ["BFS", "DFS", "Dijkstra"]
 
 
 @dataclass
@@ -44,6 +44,7 @@ class MazeNet(nn.Module):
         input_dim: int,
         hidden_dims: Tuple[int, ...] = (64, 32),
         dropout: float = 0.15,
+        num_classes: int = len(TARGET_COLUMNS),
     ) -> None:
         super().__init__()
         layers: List[nn.Module] = []
@@ -54,8 +55,10 @@ class MazeNet(nn.Module):
             if dropout > 0:
                 layers.append(nn.Dropout(p=dropout))
             prev_dim = hidden_dim
-        layers.append(nn.Linear(prev_dim, 2))
+        layers.append(nn.Linear(prev_dim, num_classes))
         self.network = nn.Sequential(*layers)
+        self.input_dim = input_dim
+        self.num_classes = num_classes
 
     def forward(self, features: torch.Tensor) -> torch.Tensor:
         return self.network(features)
@@ -80,12 +83,11 @@ def load_csv(csv_path: Path) -> Tuple[torch.Tensor, torch.Tensor]:
 
             try:
                 feature_values = [float(row[column]) for column in FEATURE_COLUMNS]
-                bfs_time = float(row["BFS"])
-                dfs_time = float(row["DFS"])
+                target_values = [float(row[column]) for column in TARGET_COLUMNS]
             except ValueError as exc:
                 raise ValueError(f"Encountered non-numeric value in row: {row}") from exc
 
-            label = 0 if bfs_time <= dfs_time else 1
+            label = min(range(len(target_values)), key=lambda idx: target_values[idx])
             feature_rows.append(feature_values)
             labels.append(label)
 
@@ -108,18 +110,47 @@ def train_val_split(
         raise ValueError("Need at least two samples to create a train/validation split.")
 
     generator = torch.Generator().manual_seed(seed)
-    indices = torch.randperm(sample_count, generator=generator)
+    num_classes = len(TARGET_COLUMNS)
 
-    raw_val_size = int(sample_count * val_ratio)
-    val_size = min(max(raw_val_size, 1), sample_count - 1)
+    train_indices: List[torch.Tensor] = []
+    val_indices: List[torch.Tensor] = []
 
-    val_indices = indices[:val_size]
-    train_indices = indices[val_size:]
+    for class_idx in range(num_classes):
+        class_mask = (labels == class_idx).nonzero(as_tuple=False).squeeze(1)
+        if class_mask.numel() == 0:
+            continue
 
-    train_features = features[train_indices]
-    train_labels = labels[train_indices]
-    val_features = features[val_indices]
-    val_labels = labels[val_indices]
+        shuffled = class_mask[torch.randperm(class_mask.numel(), generator=generator)]
+        desired_val = int(round(class_mask.numel() * val_ratio))
+        max_allowed_val = max(class_mask.numel() - 1, 0)
+        val_count = min(desired_val, max_allowed_val)
+
+        if val_count > 0:
+            val_indices.append(shuffled[:val_count])
+            train_indices.append(shuffled[val_count:])
+        else:
+            train_indices.append(shuffled)
+
+    if not train_indices:
+        raise ValueError("Unable to create a training split: no samples found.")
+
+    if not val_indices:
+        # Fallback to a simple random split if stratification produced no validation set.
+        indices = torch.randperm(sample_count, generator=generator)
+        raw_val_size = int(sample_count * val_ratio)
+        val_size = min(max(raw_val_size, 1), sample_count - 1)
+        val_indices_tensor = indices[:val_size]
+        train_indices_tensor = indices[val_size:]
+    else:
+        train_indices_tensor = torch.cat(train_indices)
+        val_indices_tensor = torch.cat(val_indices)
+        train_indices_tensor = train_indices_tensor[torch.randperm(train_indices_tensor.numel(), generator=generator)]
+        val_indices_tensor = val_indices_tensor[torch.randperm(val_indices_tensor.numel(), generator=generator)]
+
+    train_features = features[train_indices_tensor]
+    train_labels = labels[train_indices_tensor]
+    val_features = features[val_indices_tensor]
+    val_labels = labels[val_indices_tensor]
 
     return (train_features, train_labels), (val_features, val_labels)
 
@@ -143,7 +174,8 @@ def create_loaders(
     batch_size: int,
     val_ratio: float,
     seed: int,
-) -> Tuple[DataLoader, DataLoader, NormalizationStats]:
+    balance_classes: bool,
+) -> Tuple[DataLoader, DataLoader, NormalizationStats, Optional[torch.Tensor]]:
     (train_features, train_labels), (val_features, val_labels) = train_val_split(
         features, labels, val_ratio=val_ratio, seed=seed
     )
@@ -152,10 +184,20 @@ def create_loaders(
     train_dataset = TensorDataset(normalize(train_features, normalization_stats), train_labels)
     val_dataset = TensorDataset(normalize(val_features, normalization_stats), val_labels)
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    class_weights: Optional[torch.Tensor] = None
+    if balance_classes:
+        class_counts = torch.bincount(train_labels, minlength=len(TARGET_COLUMNS)).float()
+        class_counts = torch.clamp(class_counts, min=1)
+        class_weights = (class_counts.sum() / (class_counts * len(class_counts))).to(torch.float32)
+
+        sample_weights = class_weights[train_labels]
+        sampler = WeightedRandomSampler(weights=sample_weights, num_samples=len(sample_weights), replacement=True)
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=sampler)
+    else:
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
-    return train_loader, val_loader, normalization_stats
+    return train_loader, val_loader, normalization_stats, class_weights
 
 
 @torch.no_grad()
@@ -195,10 +237,11 @@ def train_model(
     epochs: int,
     learning_rate: float,
     weight_decay: float,
-    patience: int,
     device: torch.device,
+    class_weights: Optional[torch.Tensor] = None,
 ) -> Dict[str, List[float]]:
-    criterion = nn.CrossEntropyLoss()
+    weight_tensor = class_weights.to(device) if class_weights is not None else None
+    criterion = nn.CrossEntropyLoss(weight=weight_tensor)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
     history = {
         "train_loss": [],
@@ -209,7 +252,6 @@ def train_model(
 
     best_state = copy.deepcopy(model.state_dict())
     best_val_loss = float("inf")
-    patience_counter = 0
 
     for epoch in range(1, epochs + 1):
         model.train()
@@ -246,18 +288,11 @@ def train_model(
         if improved:
             best_val_loss = val_loss
             best_state = copy.deepcopy(model.state_dict())
-            patience_counter = 0
-        else:
-            patience_counter += 1
 
         print(
             f"Epoch {epoch:03d} | Train Loss: {train_loss:.4f} | Train Acc: {train_accuracy:.3f} "
             f"| Val Loss: {val_loss:.4f} | Val Acc: {val_accuracy:.3f}"
         )
-
-        if patience_counter >= patience:
-            print("Early stopping triggered.")
-            break
 
     model.load_state_dict(best_state)
     return history
@@ -281,14 +316,20 @@ def predict_faster_algorithm(
 
 def parse_arguments() -> argparse.Namespace:
     default_csv = Path(__file__).parent / "data" / "maze_data.csv"
-    parser = argparse.ArgumentParser(description="Train a model to predict whether BFS or DFS is faster.")
+    parser = argparse.ArgumentParser(
+        description="Train a model to predict which algorithm (BFS, DFS, or Dijkstra) solves a maze fastest."
+    )
     parser.add_argument("--csv-path", type=Path, default=default_csv, help="Path to the maze dataset CSV file.")
     parser.add_argument("--batch-size", type=int, default=32, help="Mini-batch size for training.")
     parser.add_argument("--epochs", type=int, default=200, help="Maximum number of training epochs.")
     parser.add_argument("--learning-rate", type=float, default=1e-3, help="Learning rate for the optimizer.")
     parser.add_argument("--weight-decay", type=float, default=1e-4, help="Weight decay for regularization.")
     parser.add_argument("--val-ratio", type=float, default=0.2, help="Fraction of data reserved for validation.")
-    parser.add_argument("--patience", type=int, default=25, help="Epoch patience for early stopping.")
+    parser.add_argument(
+        "--balance-classes",
+        action="store_true",
+        help="Use class-balanced sampling and weighted loss (may reduce overall accuracy).",
+    )
     parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility.")
     parser.add_argument(
         "--output-path",
@@ -309,16 +350,23 @@ def save_checkpoint(
     normalization: NormalizationStats,
     history: Dict[str, List[float]],
     checkpoint_path: Path,
+    class_weights: Optional[torch.Tensor] = None,
 ) -> None:
     ensure_output_directory(checkpoint_path)
+    label_mapping = {index: f"{name} fastest" for index, name in enumerate(TARGET_COLUMNS)}
     payload = {
         "model_state_dict": model.state_dict(),
-        "input_dim": next(model.parameters()).size(1),
+        "input_dim": getattr(model, "input_dim", next(model.parameters()).size(1)),
+        "num_classes": getattr(model, "num_classes", len(TARGET_COLUMNS)),
         "normalization": normalization.to_dict(),
         "history": history,
-        "label_mapping": {0: "BFS faster or equal", 1: "DFS faster"},
+        "label_mapping": label_mapping,
         "feature_columns": FEATURE_COLUMNS,
+        "class_names": TARGET_COLUMNS,
     }
+    if class_weights is not None:
+        payload["class_weights"] = class_weights.tolist()
+
     torch.save(payload, checkpoint_path)
     print(f"Model checkpoint saved to {checkpoint_path}")
 
@@ -328,16 +376,17 @@ def main() -> None:
     torch.manual_seed(args.seed)
 
     features, labels = load_csv(args.csv_path)
-    train_loader, val_loader, normalization = create_loaders(
+    train_loader, val_loader, normalization, class_weights = create_loaders(
         features,
         labels,
         batch_size=args.batch_size,
         val_ratio=args.val_ratio,
         seed=args.seed,
+        balance_classes=args.balance_classes,
     )
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = MazeNet(input_dim=features.size(1))
+    model = MazeNet(input_dim=features.size(1), num_classes=len(TARGET_COLUMNS))
     model = model.to(device)
 
     history = train_model(
@@ -347,15 +396,18 @@ def main() -> None:
         epochs=args.epochs,
         learning_rate=args.learning_rate,
         weight_decay=args.weight_decay,
-        patience=args.patience,
         device=device,
+        class_weights=class_weights,
     )
 
-    criterion = nn.CrossEntropyLoss()
-    val_loss, val_accuracy = evaluate(model, val_loader, criterion, device)
+    if class_weights is not None:
+        eval_criterion = nn.CrossEntropyLoss(weight=class_weights.to(device))
+    else:
+        eval_criterion = nn.CrossEntropyLoss()
+    val_loss, val_accuracy = evaluate(model, val_loader, eval_criterion, device)
     print(f"Validation Loss: {val_loss:.4f} | Validation Accuracy: {val_accuracy:.3f}")
 
-    save_checkpoint(model, normalization, history, args.output_path)
+    save_checkpoint(model, normalization, history, args.output_path, class_weights=class_weights)
 
 
 if __name__ == "__main__":

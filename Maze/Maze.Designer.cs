@@ -198,7 +198,7 @@
             // 
             LoopLimitNumericUpDown.Location = new Point(8, 54);
             LoopLimitNumericUpDown.Margin = new Padding(2);
-            LoopLimitNumericUpDown.Maximum = new decimal(new int[] { 200, 0, 0, 0 });
+            LoopLimitNumericUpDown.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
             LoopLimitNumericUpDown.Minimum = new decimal(new int[] { 2, 0, 0, 0 });
             LoopLimitNumericUpDown.Name = "LoopLimitNumericUpDown";
             LoopLimitNumericUpDown.Size = new Size(117, 31);

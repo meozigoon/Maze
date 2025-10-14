@@ -23,24 +23,25 @@ sys.modules["maze_model_module"] = maze_model
 spec.loader.exec_module(maze_model)
 
 FEATURE_COLUMNS = maze_model.FEATURE_COLUMNS
+TARGET_COLUMNS = tuple(getattr(maze_model, "TARGET_COLUMNS", ("BFS", "DFS", "Dijkstra")))
 MazeNet = maze_model.MazeNet
 NormalizationStats = maze_model.NormalizationStats
 predict_faster_algorithm = maze_model.predict_faster_algorithm
 
 DEFAULT_CHECKPOINT_PATH = THIS_DIR / "artifacts" / "maze_predictor.pt"
 EXAMPLE_FEATURES: Dict[str, float] = {
-    "Size": 20.0,
-    "StraightTimePenalty": 1.0,
-    "RotationPenalty": 1.0,
-    "Fork": 4.0,
-    "DeadEnd": 2.0,
+    "Size": 10,
+    "StraightTimePenalty": 100,
+    "RotationPenalty": 150,
+    "Fork": 13,
+    "DeadEnd": 11,
 }
 
 
 def load_checkpoint(
     checkpoint_path: Path,
     device: torch.device,
-) -> Tuple[torch.nn.Module, NormalizationStats, Dict[int, str], Tuple[str, ...]]:
+) -> Tuple[torch.nn.Module, NormalizationStats, Dict[int, str], Tuple[str, ...], Tuple[str, ...]]:
     if not checkpoint_path.exists():
         raise FileNotFoundError(f"Checkpoint file not found at {checkpoint_path}")
 
@@ -49,8 +50,21 @@ def load_checkpoint(
     if "input_dim" not in payload or "model_state_dict" not in payload:
         raise KeyError("Checkpoint does not contain required model information.")
 
+    raw_num_classes = payload.get("num_classes")
+    if raw_num_classes is None:
+        mapping = payload.get("label_mapping")
+        if isinstance(mapping, dict) and mapping:
+            raw_num_classes = len(mapping)
+        else:
+            class_names_payload = payload.get("class_names")
+            if isinstance(class_names_payload, (list, tuple)) and class_names_payload:
+                raw_num_classes = len(class_names_payload)
+    if raw_num_classes is None:
+        raw_num_classes = len(TARGET_COLUMNS)
+    num_classes = int(raw_num_classes)
+
     input_dim = payload["input_dim"]
-    model = MazeNet(input_dim=input_dim).to(device)
+    model = MazeNet(input_dim=input_dim, num_classes=num_classes).to(device)
     model.load_state_dict(payload["model_state_dict"])
     model.eval()
 
@@ -59,10 +73,20 @@ def load_checkpoint(
         raise KeyError("Checkpoint missing normalization statistics.")
     normalization = NormalizationStats.from_dict(normalization_payload)
 
-    label_mapping = payload.get("label_mapping", {0: "BFS faster or equal", 1: "DFS faster"})
-    feature_columns = tuple(payload.get("feature_columns", FEATURE_COLUMNS))
+    label_mapping_payload = payload.get("label_mapping")
+    if isinstance(label_mapping_payload, dict) and label_mapping_payload:
+        label_mapping = {int(key): str(value) for key, value in label_mapping_payload.items()}
+    else:
+        label_mapping = {index: f"{name} fastest" for index, name in enumerate(TARGET_COLUMNS[:num_classes])}
 
-    return model, normalization, label_mapping, feature_columns
+    feature_columns = tuple(payload.get("feature_columns", FEATURE_COLUMNS))
+    class_names_payload = payload.get("class_names")
+    if isinstance(class_names_payload, (list, tuple)) and class_names_payload:
+        class_names = tuple(str(name) for name in class_names_payload)[:num_classes]
+    else:
+        class_names = tuple(TARGET_COLUMNS[:num_classes])
+
+    return model, normalization, label_mapping, feature_columns, class_names
 
 
 def run_inference(
@@ -70,10 +94,10 @@ def run_inference(
     *,
     checkpoint_path: Path = DEFAULT_CHECKPOINT_PATH,
     use_cuda: bool = False,
-) -> Tuple[str, float, float]:
+) -> Tuple[str, Dict[str, float]]:
     device = torch.device("cuda" if use_cuda and torch.cuda.is_available() else "cpu")
 
-    model, normalization, label_mapping, feature_columns = load_checkpoint(
+    model, normalization, label_mapping, feature_columns, class_names = load_checkpoint(
         checkpoint_path=checkpoint_path,
         device=device,
     )
@@ -91,21 +115,25 @@ def run_inference(
         device=device,
     )
 
-    chosen_label = label_mapping.get(prediction, f"Class {prediction}")
-    bfs_prob = float(probabilities[0].item())
-    dfs_prob = float(probabilities[1].item())
-    return chosen_label, bfs_prob, dfs_prob
+    default_label = class_names[prediction] if prediction < len(class_names) else f"Class {prediction}"
+    chosen_label = label_mapping.get(prediction, default_label)
+    probability_map = {
+        (class_names[index] if index < len(class_names) else f"Class {index}"): float(probabilities[index].item())
+        for index in range(probabilities.size(0))
+    }
+    return chosen_label, probability_map
 
 
 def main() -> None:
-    result_label, bfs_prob, dfs_prob = run_inference(EXAMPLE_FEATURES)
+    result_label, probability_map = run_inference(EXAMPLE_FEATURES)
 
     print("Prediction Result")
     print("-----------------")
     print(f"Checkpoint: {DEFAULT_CHECKPOINT_PATH}")
     print(f"Input features: {EXAMPLE_FEATURES}")
     print(f"Predicted faster algorithm: {result_label}")
-    print(f"Probabilities -> BFS: {bfs_prob:.3f}, DFS: {dfs_prob:.3f}")
+    probability_summary = ", ".join(f"{name}: {prob:.3f}" for name, prob in probability_map.items())
+    print(f"Probabilities -> {probability_summary}")
 
 
 if __name__ == "__main__":
