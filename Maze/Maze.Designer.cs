@@ -48,6 +48,7 @@
             Bfs2ndTimeLabel = new Label();
             LoopGroupBox = new GroupBox();
             Run2ndGroupBox = new GroupBox();
+            Dijkstra2ndTimeLabel = new Label();
             WriteButton = new Button();
             CheckWriteLabel = new Label();
             DfsCheckBox = new CheckBox();
@@ -55,7 +56,6 @@
             BfsCheckBox = new CheckBox();
             DijkstraCheckBox = new CheckBox();
             DijkstraTimeLabel = new Label();
-            Dijkstra2ndTimeLabel = new Label();
             ((System.ComponentModel.ISupportInitialize)SizeNumericUpDown).BeginInit();
             ((System.ComponentModel.ISupportInitialize)StraightTimePenaltyNumericUpDown).BeginInit();
             ((System.ComponentModel.ISupportInitialize)RotationPenaltyNumericUpDown).BeginInit();
@@ -283,6 +283,16 @@
             Run2ndGroupBox.TabStop = false;
             Run2ndGroupBox.Text = "2nd";
             // 
+            // Dijkstra2ndTimeLabel
+            // 
+            Dijkstra2ndTimeLabel.AutoSize = true;
+            Dijkstra2ndTimeLabel.Location = new Point(8, 80);
+            Dijkstra2ndTimeLabel.Margin = new Padding(2, 0, 2, 0);
+            Dijkstra2ndTimeLabel.Name = "Dijkstra2ndTimeLabel";
+            Dijkstra2ndTimeLabel.Size = new Size(81, 25);
+            Dijkstra2ndTimeLabel.TabIndex = 18;
+            Dijkstra2ndTimeLabel.Text = "Dijkstra: ";
+            // 
             // WriteButton
             // 
             WriteButton.Location = new Point(9, 39);
@@ -306,6 +316,8 @@
             // DfsCheckBox
             // 
             DfsCheckBox.AutoSize = true;
+            DfsCheckBox.Checked = true;
+            DfsCheckBox.CheckState = CheckState.Checked;
             DfsCheckBox.Location = new Point(6, 43);
             DfsCheckBox.Name = "DfsCheckBox";
             DfsCheckBox.Size = new Size(70, 29);
@@ -328,6 +340,8 @@
             // BfsCheckBox
             // 
             BfsCheckBox.AutoSize = true;
+            BfsCheckBox.Checked = true;
+            BfsCheckBox.CheckState = CheckState.Checked;
             BfsCheckBox.Location = new Point(82, 43);
             BfsCheckBox.Name = "BfsCheckBox";
             BfsCheckBox.Size = new Size(68, 29);
@@ -338,6 +352,8 @@
             // DijkstraCheckBox
             // 
             DijkstraCheckBox.AutoSize = true;
+            DijkstraCheckBox.Checked = true;
+            DijkstraCheckBox.CheckState = CheckState.Checked;
             DijkstraCheckBox.Location = new Point(156, 43);
             DijkstraCheckBox.Name = "DijkstraCheckBox";
             DijkstraCheckBox.Size = new Size(97, 29);
@@ -354,16 +370,6 @@
             DijkstraTimeLabel.Size = new Size(81, 25);
             DijkstraTimeLabel.TabIndex = 25;
             DijkstraTimeLabel.Text = "Dijkstra: ";
-            // 
-            // Dijkstra2ndTimeLabel
-            // 
-            Dijkstra2ndTimeLabel.AutoSize = true;
-            Dijkstra2ndTimeLabel.Location = new Point(8, 80);
-            Dijkstra2ndTimeLabel.Margin = new Padding(2, 0, 2, 0);
-            Dijkstra2ndTimeLabel.Name = "Dijkstra2ndTimeLabel";
-            Dijkstra2ndTimeLabel.Size = new Size(81, 25);
-            Dijkstra2ndTimeLabel.TabIndex = 18;
-            Dijkstra2ndTimeLabel.Text = "Dijkstra: ";
             // 
             // Maze
             // 

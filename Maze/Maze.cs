@@ -618,7 +618,7 @@
 		private void RunButton_Click(object sender, EventArgs e)
 		{
 			List<Player> players = [];
-			if (!DfsCheckBox.Checked && !BfsCheckBox.Checked)
+			if (!DfsCheckBox.Checked && !BfsCheckBox.Checked && !DijkstraCheckBox.Checked)
 			{
 				MessageBox.Show("알고리즘을 선택해야 합니다.", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				return;
