@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Maze
+﻿namespace Maze
 {
     public partial class Maze : Form
     {
