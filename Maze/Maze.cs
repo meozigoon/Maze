@@ -42,6 +42,14 @@
             return;
         }
 
+        /// <summary>
+        /// 미로에서 BFS 탐색 시작
+        /// </summary>
+        /// <param name="player">이동 개체</param>
+        /// <param name="mazeWalls">미로 칸 배열</param>
+        /// <param name="width">너비</param>
+        /// <param name="height">높이</param>
+        /// <returns>이동 경로</returns>
         private List<Point> StartBFS(Player player, MazeWall[,] mazeWalls, int width, int height)
         {
             Queue<Point> queue = [];
@@ -85,6 +93,15 @@
             return bfsMoves;
         }
 
+        /// <summary>
+        /// 2차 BFS 탐색 시작
+        /// </summary>
+        /// <param name="player">이동 개체</param>
+        /// <param name="mazeWalls">미로 배열</param>
+        /// <param name="width">너비</param>
+        /// <param name="height">높이</param>
+        /// <param name="visited1st">1차 탐색 visited</param>
+        /// <returns>이동 경로</returns>
         private static List<Point> Start2ndBFS(Player player, MazeWall[,] mazeWalls, int width, int height, HashSet<Point> visited1st)
         {
             Queue<Point> queue = [];
@@ -123,6 +140,14 @@
             return bfsMoves;
         }
 
+        /// <summary>
+        /// DFS 탐색 시작
+        /// </summary>
+        /// <param name="player">이동 개체</param>
+        /// <param name="mazeWalls">미로 배열</param>
+        /// <param name="width">너비</param>
+        /// <param name="height">높이</param>
+        /// <returns>이동 경로</returns>
         private List<Point> StartDFS(Player player, MazeWall[,] mazeWalls, int width, int height)
         {
             Stack<Point> stack = [];
@@ -165,6 +190,15 @@
             return dfsMoves;
         }
 
+        /// <summary>
+        /// 2차 DFS 탐색 시작
+        /// </summary>
+        /// <param name="player">이동 개체</param>
+        /// <param name="mazeWalls">미로 배열</param>
+        /// <param name="width">너비</param>
+        /// <param name="height">높이</param>
+        /// <param name="visited1st">1차 visited</param>
+        /// <returns>이동 경로</returns>
         private static List<Point> Start2ndDFS(Player player, MazeWall[,] mazeWalls, int width, int height, HashSet<Point> visited1st)
         {
             Stack<Point> stack = [];
@@ -202,6 +236,13 @@
             return dfsMoves;
         }
 
+        /// <summary>
+        /// 움직임 시각화
+        /// </summary>
+        /// <param name="player">이동 개체</param>
+        /// <param name="moveSequence">이동 경로</param>
+        /// <param name="mazeWalls">미로 배열</param>
+        /// <returns>개체</returns>
         private static Player SimulateMovement(Player player, List<Point> moveSequence, MazeWall[,] mazeWalls)
         {
             for (int moveIndex = 0; moveIndex < moveSequence.Count; moveIndex++)
@@ -212,6 +253,11 @@
             return player;
         }
 
+        /// <summary>
+        /// 움직임 경로 시각화 및 시간 표시
+        /// </summary>
+        /// <param name="player">이동 개체</param>
+        /// <param name="clock">delay 시간</param>
         private void SimulateMove(List<Player> player, int clock)
         {
             int[] time = new int[player.Count];
@@ -250,6 +296,12 @@
             }
         }
 
+        /// <summary>
+        /// 미로 생성 (DFS 백트래킹)
+        /// </summary>
+        /// <param name="mazeWalls">미로 배열</param>
+        /// <param name="width">너비</param>
+        /// <param name="height">높이</param>
         private static void GenerateMaze(ref MazeWall[,] mazeWalls, int width, int height)
         {
             bool[,] visited = new bool[width, height];
@@ -294,6 +346,11 @@
             }
         }
 
+        /// <summary>
+        /// 미로 생성 버튼 클릭 시
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void GenerateMazeButton_Click(object sender, EventArgs e)
         {
             if (mazeWall != null)
@@ -306,19 +363,19 @@
 
             mazeWall = new MazeWall[(int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value];
             int size;
-            int Widthstart;
-            int Heightstart;
+            int widthStart;
+            int heightStart;
             if (Size.Width < Size.Height)
             {
                 size = 4 * Size.Width / ((int)SizeNumericUpDown.Value * 5);
-                Heightstart = SizeNumericUpDown.Location.Y + SizeNumericUpDown.Size.Height + Size.Height / 10;
-                Widthstart = Size.Width / 2 - Convert.ToInt32(size * (int)SizeNumericUpDown.Value / 2.0);
+                heightStart = SizeNumericUpDown.Location.Y + SizeNumericUpDown.Size.Height + Size.Height / 10;
+                widthStart = Size.Width / 2 - Convert.ToInt32(size * (int)SizeNumericUpDown.Value / 2.0);
             }
             else
             {
                 size = 4 * (Size.Height - SizeNumericUpDown.Location.Y - SizeNumericUpDown.Size.Height) / ((int)SizeNumericUpDown.Value * 5);
-                Heightstart = SizeNumericUpDown.Location.Y + SizeNumericUpDown.Size.Height + Size.Height / 10;
-                Widthstart = Size.Width / 2 - Convert.ToInt32(size * (int)SizeNumericUpDown.Value / 2.0);
+                heightStart = SizeNumericUpDown.Location.Y + SizeNumericUpDown.Size.Height + Size.Height / 10;
+                widthStart = Size.Width / 2 - Convert.ToInt32(size * (int)SizeNumericUpDown.Value / 2.0);
             }
 
             for (int i = 0; i < mazeWall.GetLength(0); i++)
@@ -363,7 +420,7 @@
                         mazeWall[i, j].isNotConnected[2] = true; // Bottom
                     }
                     mazeWall[i, j].Size = new(size, size);
-                    mazeWall[i, j].Location = new(i * size + Widthstart, j * size + Heightstart);
+                    mazeWall[i, j].Location = new(i * size + widthStart, j * size + heightStart);
                     mazeWall[i, j].AddAllWalls();
                     this.Controls.Add(mazeWall[i, j].pictureBox);
                 }
@@ -372,6 +429,11 @@
             RunButton.Enabled = true;
         }
 
+        /// <summary>
+        /// 사이즈 변경 시 최소 크기 제한
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Maze_SizeChanged(object sender, EventArgs e)
         {
             if (this.Size.Width < 800)
@@ -384,6 +446,11 @@
             }
         }
 
+        /// <summary>
+        /// 크기 변경 시 최소 크기 제한 및 라벨 갱신
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void SizeNumericUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (SizeNumericUpDown.Value < 2)
@@ -393,6 +460,11 @@
             LoopLimitLabel.Text = "n = " + SizeNumericUpDown.Value.ToString();
         }
 
+        /// <summary>
+        /// 실행 버튼 클릭 시
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void RunButton_Click(object sender, EventArgs e)
         {
             List<Player> players =
@@ -436,6 +508,10 @@
             GenerateMazeButton.Enabled = true;
         }
 
+        /// <summary>
+        /// csv 파일에 결과 기록
+        /// </summary>
+        /// <param name="csvFilePath">csv 파일 경로</param>
         private void WriteCsv(string csvFilePath)
         {
             if (csvFilePath == null || csvFilePath == "")
@@ -443,16 +519,29 @@
                 return;
             }
 
-            decimal[] rowData = [(int)SizeNumericUpDown.Value, (int)StraightTimePenaltyNumericUpDown.Value, decimal.Parse(BfsTimeLabel.Text.Split(" ")[2]), decimal.Parse(DfsTimeLabel.Text.Split(" ")[2])]; ;
+            decimal[] rowData = [(int)SizeNumericUpDown.Value, 
+                (int)StraightTimePenaltyNumericUpDown.Value, 
+                decimal.Parse(BfsTimeLabel.Text.Split(" ")[2]), 
+                decimal.Parse(DfsTimeLabel.Text.Split(" ")[2])]; ;
             if (isSecond)
             {
-                rowData = [(int)SizeNumericUpDown.Value, (int)StraightTimePenaltyNumericUpDown.Value, decimal.Parse(BfsTimeLabel.Text.Split(" ")[2]), decimal.Parse(DfsTimeLabel.Text.Split(" ")[2]), decimal.Parse(Bfs2ndTimeLabel.Text.Split(" ")[2]), decimal.Parse(Dfs2ndTimeLabel.Text.Split(" ")[2])];
+                rowData = [(int)SizeNumericUpDown.Value, 
+                    (int)StraightTimePenaltyNumericUpDown.Value, 
+                    decimal.Parse(BfsTimeLabel.Text.Split(" ")[2]), 
+                    decimal.Parse(DfsTimeLabel.Text.Split(" ")[2]), 
+                    decimal.Parse(Bfs2ndTimeLabel.Text.Split(" ")[2]), 
+                    decimal.Parse(Dfs2ndTimeLabel.Text.Split(" ")[2])];
             }
 
             using StreamWriter sw = new(csvFilePath, append: true);
             sw.WriteLine(string.Join(",", rowData));
         }
 
+        /// <summary>
+        /// keydown 이벤트 (Enter: 미로 생성, Space: 실행)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void SizeNumericUpDown_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
@@ -465,6 +554,11 @@
             }
         }
 
+        /// <summary>
+        /// 반복 실행 버튼 클릭 시
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void RunLoopButton_Click(object sender, EventArgs e)
         {
             RunLoopButton.Enabled = false;
@@ -484,6 +578,11 @@
             LoopCountLabel.Text = "횟수 = 0";
         }
 
+        /// <summary>
+        /// 반복 실행 횟수 keydown 이벤트 (Enter: 반복 실행)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void LoopLimitNumericUpDown_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
@@ -492,6 +591,11 @@
             }
         }
 
+        /// <summary>
+        /// 2단계 탐색 버튼 클릭 시
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Check2ndRunButton_Click(object sender, EventArgs e)
         {
             isSecond = !isSecond;
@@ -499,6 +603,11 @@
             Check2ndLabel.Text = isSecond.ToString();
         }
 
+        /// <summary>
+        /// 기록 버튼 클릭 시 isWrite 설정
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void WriteButton_Click(object sender, EventArgs e)
         {
             isWrite = !isWrite;
@@ -507,12 +616,21 @@
         }
     }
 
+    /// <summary>
+    /// player 클래스
+    /// </summary>
+    /// <param name="color">player 색상</param>
     class Player(Color color)
     {
         public Point Location { get; set; } = new Point(0, 0);
         public Color Color { get; set; } = color;
         public List<Point> Path { get; set; } = [];
 
+        /// <summary>
+        /// player 이동
+        /// </summary>
+        /// <param name="newLocation">이동할 위치</param>
+        /// <param name="mazeWalls">미로 배열 정보</param>
         public void Move(Point newLocation, MazeWall[,] mazeWalls)
         {
             Dictionary<Point, Point?> parent = [];
@@ -542,7 +660,8 @@
 
                 for (int i = 0; i < 4; i++)
                 {
-                    if (!mazeWalls[current.X, current.Y].isNotConnected[i] && !mazeWalls[current.X, current.Y].closedSides.Contains((MazeWall.Closed)i))
+                    if (!mazeWalls[current.X, current.Y].isNotConnected[i] && 
+                        !mazeWalls[current.X, current.Y].closedSides.Contains((MazeWall.Closed)i))
                     {
                         Point next = new(current.X + directions[i].X, current.Y + directions[i].Y);
                         if (!visited.Contains(next))
@@ -575,6 +694,9 @@
         }
     }
 
+    /// <summary>
+    /// 미로 배열 클래스
+    /// </summary>
     class MazeWall
     {
         public List<Closed> closedSides;
@@ -590,6 +712,9 @@
             Left
         }
 
+        /// <summary>
+        /// 생성자
+        /// </summary>
         public MazeWall()
         {
             closedSides = [];
@@ -617,6 +742,9 @@
             set { pictureBox.Size = value; }
         }
 
+        /// <summary>
+        /// 모든 방향 벽 추가
+        /// </summary>
         public void AddAllWalls()
         {
             AddClosed(Closed.Top);
@@ -625,6 +753,11 @@
             AddClosed(Closed.Left);
         }
 
+        /// <summary>
+        /// 닫힌 벽 추가
+        /// </summary>
+        /// <param name="closed">닫힌 벽 방향</param>
+        /// <returns>닫힘 추가 성공 여부</returns>
         public bool AddClosed(Closed closed)
         {
             if (closedSides.Contains(closed))
