@@ -372,6 +372,7 @@
 				foreach (var wall in mazeWall)
 				{
 					this.Controls.Remove(wall.pictureBox);
+					wall.Dispose();
 				}
 			}
 
@@ -551,17 +552,31 @@
 		/// <param name="csvFilePath">csv 파일 경로</param>
 		private void WriteCsv(string csvFilePath)
 		{
-			if (csvFilePath == null || csvFilePath == "")
+            if (string.IsNullOrEmpty(csvFilePath))
 			{
 				return;
 			}
 
-			decimal[] rowData =
+			int fork = 0, deadEnd = 0;
+            foreach (var cell in mazeWall)
+			{
+				if (cell.closedSides.Count == 1)
+				{
+					deadEnd++;
+                }
+				else if (cell.closedSides.Count == 3)
+				{
+					fork++;
+				}
+            }
+
+            decimal[] rowData =
 			[
 				(int)SizeNumericUpDown.Value,
 				(int)StraightTimePenaltyNumericUpDown.Value,
 				(int)RotationPenaltyNumericUpDown.Value,
-				decimal.Parse(BfsTimeLabel.Text.Split(" ")[2]),
+				fork, deadEnd,
+                decimal.Parse(BfsTimeLabel.Text.Split(" ")[2]),
 				decimal.Parse(DfsTimeLabel.Text.Split(" ")[2])
 			];
 
@@ -672,12 +687,12 @@
 					if (!File.Exists(csvDataFilePath))
 					{
 						using StreamWriter sw = new(csvDataFilePath, append: false);
-						sw.WriteLine("Size,StraightTimePenalty,RotationPenalty,BFS,DFS,BFS_2nd,DFS_2nd");
+						sw.WriteLine("Size,StraightTimePenalty,RotationPenalty,Fork,DeadEnd,BFS,DFS,BFS_2nd,DFS_2nd");
 					}
 					if (!File.Exists(csv2ndDataFilePath))
 					{
 						using StreamWriter sw = new(csv2ndDataFilePath, append: false);
-						sw.WriteLine("Size,StraightTimePenalty,RotationPenalty,BFS,DFS,BFS_2nd,DFS_2nd");
+						sw.WriteLine("Size,StraightTimePenalty,RotationPenalty,Fork,DeadEnd,BFS,DFS,BFS_2nd,DFS_2nd");
 					}
 				}
 				catch (Exception ex)
@@ -767,14 +782,14 @@
 				Path.Add(reversedPath.Pop());
 			}
 		}
-	}
+    }
 
 	/// <summary>
 	/// 미로 배열 클래스
 	/// </summary>
 	class MazeWall
 	{
-		public List<Closed> closedSides;
+		public HashSet<Closed> closedSides;
 		public Bitmap bitmap;
 		public PictureBox pictureBox;
 		public bool[] isNotConnected = [false, false, false, false]; // Top, Right, Bottom, Left
@@ -787,9 +802,6 @@
 			Left
 		}
 
-		/// <summary>
-		/// 생성자
-		/// </summary>
 		public MazeWall()
 		{
 			closedSides = [];
@@ -835,12 +847,11 @@
 		/// <returns>닫힘 추가 성공 여부</returns>
 		public bool AddClosed(Closed closed)
 		{
-			if (closedSides.Contains(closed))
+			if (!closedSides.Add(closed))
 			{
 				return false;
 			}
 
-			closedSides.Add(closed);
 			using (Graphics g = Graphics.FromImage(bitmap))
 			{
 				using (Pen thickPen = new(Color.Gray, 40))
@@ -886,13 +897,18 @@
 			return true;
 		}
 
-		/// <summary>
-		/// player 위치 색칠
-		/// </summary>
-		/// <param name="R"></param>
-		/// <param name="G"></param>
-		/// <param name="B"></param>
-		public void PlayerOn(int R, int G, int B)
+        /// <summary>
+        /// 지정된 방향이 닫혀 있는지 여부를 반환
+        /// </summary>
+        public bool IsSideClosed(Closed closed) => closedSides.Contains(closed);
+
+        /// <summary>
+        /// player 위치 색칠
+        /// </summary>
+        /// <param name="R"></param>
+        /// <param name="G"></param>
+        /// <param name="B"></param>
+        public void PlayerOn(int R, int G, int B)
 		{
 			using (Graphics g = Graphics.FromImage(bitmap))
 			{
@@ -909,12 +925,11 @@
 		/// <returns>제거 성공 여부</returns>
 		public bool RemovedClosed(Closed closed)
 		{
-			if (!closedSides.Contains(closed))
+			if (!closedSides.Remove(closed))
 			{
 				return false;
 			}
 
-			closedSides.Remove(closed);
 			using (Graphics g = Graphics.FromImage(bitmap))
 			{
 				g.Clear(Color.White);
@@ -967,5 +982,14 @@
 			pictureBox.Image = bitmap;
 			return true;
 		}
-	}
+
+		/// <summary>
+		/// 해제
+		/// </summary>
+        public void Dispose()
+        {
+            pictureBox.Dispose();
+            bitmap.Dispose();
+        }
+    }
 }
