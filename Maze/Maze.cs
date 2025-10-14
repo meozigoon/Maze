@@ -250,9 +250,8 @@
 		/// <param name="players">이동 개체 List</param>
 		/// <param name="straightPenalty">직선 이동 delay</param>
 		/// <param name="rotationPenalty">회전 이동 delay</param>
-		private async Task SimulateMove(List<Player> players, int straightPenalty, int rotationPenalty)
+		private void SimulateMove(List<Player> players, int straightPenalty, int rotationPenalty)
 		{
-			//int[] time = new int[player.Count];
 			Point?[] previousDirections = new Point?[players.Count];
 			Dictionary<string, int> time = [];
 			foreach (var player in players)
@@ -288,7 +287,7 @@
 				}
 				if (maxDelay > 0)
 				{
-					await Task.Delay(maxDelay);
+					// await Task.Delay(maxDelay);
 				}
 				if (!isPlayerMoved)
 				{
@@ -530,7 +529,7 @@
 					players.Add(player);
 				}
 			}
-			_ = SimulateMove(players, (int)StraightTimePenaltyNumericUpDown.Value, (int)RotationPenaltyNumericUpDown.Value);
+            SimulateMove(players, (int)StraightTimePenaltyNumericUpDown.Value, (int)RotationPenaltyNumericUpDown.Value);
 
 			if (isWrite)
 			{
