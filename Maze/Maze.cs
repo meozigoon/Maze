@@ -811,6 +811,12 @@
             return true;
         }
 
+        /// <summary>
+        /// player 위치 색칠
+        /// </summary>
+        /// <param name="R"></param>
+        /// <param name="G"></param>
+        /// <param name="B"></param>
         public void PlayerOn(int R, int G, int B)
         {
             using (Graphics g = Graphics.FromImage(bitmap))
@@ -821,6 +827,11 @@
             pictureBox.Image = bitmap;
         }
 
+        /// <summary>
+        /// 벽 제거
+        /// </summary>
+        /// <param name="closed">제거할 벽</param>
+        /// <returns>제거 성공 여부</returns>
         public bool RemovedClosed(Closed closed)
         {
             if (!closedSides.Contains(closed))
