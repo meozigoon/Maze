@@ -43,18 +43,18 @@
 		/// <returns>이동 경로</returns>
 		private List<Point> StartBFS(Player player, MazeWall[,] mazeWalls, int width, int height)
 		{
-			Queue<Point> queue = [];
+			Queue<Point> bfsQueue = [];
 			HashSet<Point> visited = [];
 
-			queue.Enqueue(player.Location);
+			bfsQueue.Enqueue(player.Location);
 			visited.Add(player.Location);
 
 			// 큐에 넣은 모든 경로를 저장
 			List<Point> bfsMoves = [];
 
-			while (queue.Count > 0)
+			while (bfsQueue.Count > 0)
 			{
-				Point current = queue.Dequeue();
+				Point current = bfsQueue.Dequeue();
 				bfsMoves.Add(current); // 탐색 시도 위치 기록
 
 				if (current == new Point(width - 1, height - 1))
@@ -69,7 +69,7 @@
 						Point next = new(current.X + directions[i].X, current.Y + directions[i].Y);
 						if (!visited.Contains(next))
 						{
-							queue.Enqueue(next);
+							bfsQueue.Enqueue(next);
 							visited.Add(next);
 						}
 					}
@@ -95,18 +95,18 @@
 		/// <returns>이동 경로</returns>
 		private static List<Point> Start2ndBFS(Player player, MazeWall[,] mazeWalls, int width, int height, HashSet<Point> visited1st)
 		{
-			Queue<Point> queue = [];
+			Queue<Point> bfsQueue = [];
 			HashSet<Point> visited = [];
 
-			queue.Enqueue(player.Location);
+			bfsQueue.Enqueue(player.Location);
 			visited.Add(player.Location);
 
 			// 큐에 넣은 모든 경로를 저장
 			List<Point> bfsMoves = [];
 
-			while (queue.Count > 0)
+			while (bfsQueue.Count > 0)
 			{
-				Point current = queue.Dequeue();
+				Point current = bfsQueue.Dequeue();
 				bfsMoves.Add(current); // 탐색 시도 위치 기록
 
 				if (current == new Point(width - 1, height - 1))
@@ -121,7 +121,7 @@
 						Point next = new(current.X + directions[i].X, current.Y + directions[i].Y);
 						if (!visited.Contains(next) && visited1st.Contains(next))
 						{
-							queue.Enqueue(next);
+							bfsQueue.Enqueue(next);
 							visited.Add(next);
 						}
 					}
@@ -709,16 +709,16 @@
 		public void Move(Point newLocation, MazeWall[,] mazeWalls)
 		{
 			Dictionary<Point, Point?> parent = [];
-			Queue<Point> queue = new();
+			Queue<Point> bfsQueue = new();
 			HashSet<Point> visited = [];
 
-			queue.Enqueue(Location);
+			bfsQueue.Enqueue(Location);
 			visited.Add(Location);
 			parent[Location] = null;
 
-			while (queue.Count > 0)
+			while (bfsQueue.Count > 0)
 			{
-				Point current = queue.Dequeue();
+				Point current = bfsQueue.Dequeue();
 
 				if (current == newLocation)
 				{
@@ -741,7 +741,7 @@
 						Point next = new(current.X + directions[i].X, current.Y + directions[i].Y);
 						if (!visited.Contains(next))
 						{
-							queue.Enqueue(next);
+							bfsQueue.Enqueue(next);
 							visited.Add(next);
 							parent[next] = current;
 						}
