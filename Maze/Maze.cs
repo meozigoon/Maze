@@ -272,17 +272,18 @@
 						Point currentLocation = players[i].Location;
 						Point nextLocation = players[i].Path[0];
 						players[i].Path.RemoveAt(0);
-						Point movement = new(nextLocation.X - currentLocation.X, nextLocation.Y - currentLocation.Y);
-						bool isRotation = previousDirections[i].HasValue && previousDirections[i] != movement;
-						int delay = isRotation ? rotationPenalty : straightPenalty;
-						time[players[i].Name] += delay;
-						previousDirections[i] = movement;
-						players[i].Location = nextLocation;
-						mazeWall[nextLocation.X, nextLocation.Y].PlayerOn(players[i].Color.R, players[i].Color.G, players[i].Color.B);
-						if (delay > maxDelay)
-						{
-							maxDelay = delay;
-						}
+                        Point movement = new(nextLocation.X - currentLocation.X, nextLocation.Y - currentLocation.Y);
+                        bool hasMovement = movement != Point.Empty;
+                        bool isRotation = hasMovement && previousDirections[i].HasValue && previousDirections[i] != movement;
+                        int delay = hasMovement ? (isRotation ? rotationPenalty : straightPenalty) : 0;
+                        time[players[i].Name] += delay;
+                        if (hasMovement)
+                        {
+                            previousDirections[i] = movement;
+                        }
+                        players[i].Location = nextLocation;
+                        mazeWall[nextLocation.X, nextLocation.Y].PlayerOn(players[i].Color.R, players[i].Color.G, players[i].Color.B);
+						maxDelay = Math.Max(maxDelay, delay);
 					}
 				}
 				if (maxDelay > 0)
