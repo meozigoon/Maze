@@ -687,7 +687,7 @@
 					if (!File.Exists(csvDataFilePath))
 					{
 						using StreamWriter sw = new(csvDataFilePath, append: false);
-						sw.WriteLine("Size,StraightTimePenalty,RotationPenalty,Fork,DeadEnd,BFS,DFS,BFS_2nd,DFS_2nd");
+						sw.WriteLine("Size,StraightTimePenalty,RotationPenalty,Fork,DeadEnd,BFS,DFS");
 					}
 					if (!File.Exists(csv2ndDataFilePath))
 					{
