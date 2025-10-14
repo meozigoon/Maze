@@ -69,12 +69,11 @@
 						!mazeCells[current.X, current.Y].closedSides.Contains((MazeCell.Closed)i))
 					{
 						Point next = new(current.X + directions[i].X, current.Y + directions[i].Y);
-						if (!visited.Contains(next))
-						{
-							bfsQueue.Enqueue(next);
-							visited.Add(next);
-						}
-					}
+                        if (visited.Add(next))
+                        {
+                            bfsQueue.Enqueue(next);
+                        }
+                    }
 				}
 			}
 
@@ -122,11 +121,10 @@
 						!mazeCells[current.X, current.Y].closedSides.Contains((MazeCell.Closed)i))
 					{
 						Point next = new(current.X + directions[i].X, current.Y + directions[i].Y);
-						if (!visited.Contains(next) && visited1st.Contains(next))
-						{
-							bfsQueue.Enqueue(next);
-							visited.Add(next);
-						}
+                        if (visited.Add(next) && visited1st.Contains(next))
+                        {
+                            bfsQueue.Enqueue(next);
+                        }
 					}
 				}
 			}
@@ -168,12 +166,11 @@
 						!mazeCells[current.X, current.Y].closedSides.Contains((MazeCell.Closed)i))
 					{
 						Point next = new(current.X + directions[i].X, current.Y + directions[i].Y);
-						if (!visited.Contains(next))
-						{
-							dfsStack.Push(next);
-							visited.Add(next);
-						}
-					}
+                        if (visited.Add(next))
+                        {
+                            dfsStack.Push(next);
+                        }
+                    }
 				}
 			}
 
@@ -225,7 +222,11 @@
 							dfsStack.Push(next);
 							visited.Add(next);
 						}
-					}
+                        if (visited.Add(next) && visited1st.Contains(next))
+                        {
+                            dfsStack.Push(next);
+                        }
+                    }
 				}
 			}
 
