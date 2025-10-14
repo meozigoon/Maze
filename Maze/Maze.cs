@@ -31,29 +31,6 @@
         public Maze()
         {
             InitializeComponent();
-            try
-            {
-                if (!Directory.Exists(dataFolderPath))
-                {
-                    Directory.CreateDirectory(dataFolderPath);
-                }
-                if (!File.Exists(csvDataFilePath))
-                {
-                    using StreamWriter sw = new(csvDataFilePath, append: false);
-                    sw.WriteLine("Size,StraightTimePenalty,BFS,DFS,BFS_2nd,DFS_2nd");
-                }
-                if (!File.Exists(csv2ndDataFilePath))
-                {
-                    using StreamWriter sw = new(csv2ndDataFilePath, append: false);
-                    sw.WriteLine("Size,StraightTimePenalty,BFS,DFS,BFS_2nd,DFS_2nd");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("CSV 파일 오류가 발생했습니다. 경로를 확인하세요.\n" + ex.Message, "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                System.Diagnostics.Process.Start("explorer.exe", dataFolderPath);
-                this.Close();
-            }
         }
 
         /// <summary>
@@ -667,6 +644,32 @@
             isWrite = !isWrite;
             WriteButton.Text = "기록 " + (isWrite ? "OFF" : "ON");
             CheckWriteLabel.Text = isWrite.ToString();
+            if (isWrite)
+            {
+                try
+                {
+                    if (!Directory.Exists(dataFolderPath))
+                    {
+                        Directory.CreateDirectory(dataFolderPath);
+                    }
+                    if (!File.Exists(csvDataFilePath))
+                    {
+                        using StreamWriter sw = new(csvDataFilePath, append: false);
+                        sw.WriteLine("Size,StraightTimePenalty,BFS,DFS,BFS_2nd,DFS_2nd");
+                    }
+                    if (!File.Exists(csv2ndDataFilePath))
+                    {
+                        using StreamWriter sw = new(csv2ndDataFilePath, append: false);
+                        sw.WriteLine("Size,StraightTimePenalty,BFS,DFS,BFS_2nd,DFS_2nd");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("CSV 파일 오류가 발생했습니다. 경로를 확인하세요.\n" + ex.Message, "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    System.Diagnostics.Process.Start("explorer.exe", dataFolderPath);
+                    this.Close();
+                }
+            }
         }
     }
 
