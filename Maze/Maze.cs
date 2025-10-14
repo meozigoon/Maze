@@ -2,7 +2,7 @@
 {
 	public partial class Maze : Form
 	{
-		MazeWall[,] mazeWall = null!;
+		MazeCell[,] mazeCell = null!;
 		bool isSecond = false;
 		bool isWrite = false;
 		HashSet<Point> prevBfsVisited = [];
@@ -38,11 +38,11 @@
 		/// 미로에서 BFS 탐색 시작
 		/// </summary>
 		/// <param name="player">이동 개체</param>
-		/// <param name="mazeWalls">미로 칸 배열</param>
+		/// <param name="mazeCells">미로 칸 배열</param>
 		/// <param name="width">너비</param>
 		/// <param name="height">높이</param>
 		/// <returns>이동 경로</returns>
-		private List<Point> StartBFS(Player player, MazeWall[,] mazeWalls, int width, int height)
+		private List<Point> StartBFS(Player player, MazeCell[,] mazeCells, int width, int height)
 		{
 			Queue<Point> bfsQueue = [];
 			HashSet<Point> visited = [];
@@ -65,7 +65,7 @@
 
 				for (int i = 0; i < 4; i++)
 				{
-					if (!mazeWalls[current.X, current.Y].isNotConnected[i] && !mazeWalls[current.X, current.Y].closedSides.Contains((MazeWall.Closed)i))
+					if (!mazeCells[current.X, current.Y].isNotConnected[i] && !mazeCells[current.X, current.Y].closedSides.Contains((MazeCell.Closed)i))
 					{
 						Point next = new(current.X + directions[i].X, current.Y + directions[i].Y);
 						if (!visited.Contains(next))
@@ -89,12 +89,12 @@
 		/// 2차 BFS 탐색 시작
 		/// </summary>
 		/// <param name="player">이동 개체</param>
-		/// <param name="mazeWalls">미로 배열</param>
+		/// <param name="mazeCells">미로 배열</param>
 		/// <param name="width">너비</param>
 		/// <param name="height">높이</param>
 		/// <param name="visited1st">1차 탐색 visited</param>
 		/// <returns>이동 경로</returns>
-		private static List<Point> Start2ndBFS(Player player, MazeWall[,] mazeWalls, int width, int height, HashSet<Point> visited1st)
+		private static List<Point> Start2ndBFS(Player player, MazeCell[,] mazeCells, int width, int height, HashSet<Point> visited1st)
 		{
 			Queue<Point> bfsQueue = [];
 			HashSet<Point> visited = [];
@@ -117,7 +117,7 @@
 
 				for (int i = 0; i < 4; i++)
 				{
-					if (!mazeWalls[current.X, current.Y].isNotConnected[i] && !mazeWalls[current.X, current.Y].closedSides.Contains((MazeWall.Closed)i))
+					if (!mazeCells[current.X, current.Y].isNotConnected[i] && !mazeCells[current.X, current.Y].closedSides.Contains((MazeCell.Closed)i))
 					{
 						Point next = new(current.X + directions[i].X, current.Y + directions[i].Y);
 						if (!visited.Contains(next) && visited1st.Contains(next))
@@ -136,11 +136,11 @@
 		/// DFS 탐색 시작
 		/// </summary>
 		/// <param name="player">이동 개체</param>
-		/// <param name="mazeWalls">미로 배열</param>
+		/// <param name="mazeCells">미로 배열</param>
 		/// <param name="width">너비</param>
 		/// <param name="height">높이</param>
 		/// <returns>이동 경로</returns>
-		private List<Point> StartDFS(Player player, MazeWall[,] mazeWalls, int width, int height)
+		private List<Point> StartDFS(Player player, MazeCell[,] mazeCells, int width, int height)
 		{
 			Stack<Point> dfsStack = [];
 			HashSet<Point> visited = [];
@@ -162,7 +162,7 @@
 
 				for (int i = 0; i < 4; i++)
 				{
-					if (!mazeWalls[current.X, current.Y].isNotConnected[i] && !mazeWalls[current.X, current.Y].closedSides.Contains((MazeWall.Closed)i))
+					if (!mazeCells[current.X, current.Y].isNotConnected[i] && !mazeCells[current.X, current.Y].closedSides.Contains((MazeCell.Closed)i))
 					{
 						Point next = new(current.X + directions[i].X, current.Y + directions[i].Y);
 						if (!visited.Contains(next))
@@ -186,12 +186,12 @@
 		/// 2차 DFS 탐색 시작
 		/// </summary>
 		/// <param name="player">이동 개체</param>
-		/// <param name="mazeWalls">미로 배열</param>
+		/// <param name="mazeCells">미로 배열</param>
 		/// <param name="width">너비</param>
 		/// <param name="height">높이</param>
 		/// <param name="visited1st">1차 visited</param>
 		/// <returns>이동 경로</returns>
-		private static List<Point> Start2ndDFS(Player player, MazeWall[,] mazeWalls, int width, int height, HashSet<Point> visited1st)
+		private static List<Point> Start2ndDFS(Player player, MazeCell[,] mazeCells, int width, int height, HashSet<Point> visited1st)
 		{
 			Stack<Point> dfsStack = [];
 			HashSet<Point> visited = [];
@@ -213,7 +213,7 @@
 
 				for (int i = 0; i < 4; i++)
 				{
-					if (!mazeWalls[current.X, current.Y].isNotConnected[i] && !mazeWalls[current.X, current.Y].closedSides.Contains((MazeWall.Closed)i))
+					if (!mazeCells[current.X, current.Y].isNotConnected[i] && !mazeCells[current.X, current.Y].closedSides.Contains((MazeCell.Closed)i))
 					{
 						Point next = new(current.X + directions[i].X, current.Y + directions[i].Y);
 						if (!visited.Contains(next) && visited1st.Contains(next))
@@ -232,11 +232,11 @@
 		/// 다익스트라 탐색
 		/// </summary>
 		/// <param name="player">이동 개체</param>
-		/// <param name="mazeWalls">미로 배열</param>
+		/// <param name="mazeCells">미로 배열</param>
 		/// <param name="width">너비</param>
 		/// <param name="height">높이</param>
 		/// <returns>이동 경로</returns>
-		private static List<Point> StartDijkstra(Player player, MazeWall[,] mazeWalls, int width, int height) // TODO: Implementation
+		private static List<Point> StartDijkstra(Player player, MazeCell[,] mazeCells, int width, int height) // TODO: Implementation
 		{
 			List<Point> dijkstraMoves = [];
 
@@ -247,12 +247,12 @@
         /// 2차 다익스트라 탐색
         /// </summary>
         /// <param name="player">이동 개체</param>
-        /// <param name="mazeWalls">미로 배열</param>
+        /// <param name="mazeCells">미로 배열</param>
         /// <param name="width">너비</param>
         /// <param name="height">높이</param>
         /// <param name="visited1st">1차 visited</param>
         /// <returns>이동 경로</returns>
-        private static List<Point> Start2ndDijkstra(Player player, MazeWall[,] mazeWalls, int width, int height, HashSet<Point> visited1st) // TODO: Implementation
+        private static List<Point> Start2ndDijkstra(Player player, MazeCell[,] mazeCells, int width, int height, HashSet<Point> visited1st) // TODO: Implementation
 		{
 			List<Point> dijkstraMoves = [];
 
@@ -264,13 +264,13 @@
         /// </summary>
         /// <param name="player">이동 개체</param>
         /// <param name="moveSequence">이동 경로</param>
-        /// <param name="mazeWalls">미로 배열</param>
+        /// <param name="mazeCells">미로 배열</param>
         /// <returns>개체</returns>
-        private static Player SimulateMovement(Player player, List<Point> moveSequence, MazeWall[,] mazeWalls)
+        private static Player SimulateMovement(Player player, List<Point> moveSequence, MazeCell[,] mazeCells)
 		{
 			for (int moveIndex = 0; moveIndex < moveSequence.Count; moveIndex++)
 			{
-				player.Move(moveSequence[moveIndex], mazeWalls); // 내부적으로 Path 갱신됨
+				player.Move(moveSequence[moveIndex], mazeCells); // 내부적으로 Path 갱신됨
 				player.Location = moveSequence[moveIndex];       // 실제 현재 위치 갱신
 			}
 			return player;
@@ -313,7 +313,7 @@
                             previousDirections[i] = movement;
                         }
                         players[i].Location = nextLocation;
-                        mazeWall[nextLocation.X, nextLocation.Y].PlayerOn(players[i].Color.R, players[i].Color.G, players[i].Color.B);
+                        mazeCell[nextLocation.X, nextLocation.Y].PlayerOn(players[i].Color.R, players[i].Color.G, players[i].Color.B);
 						maxDelay = Math.Max(maxDelay, delay);
 					}
 				}
@@ -347,10 +347,10 @@
 		/// <summary>
 		/// 미로 생성 (DFS 백트래킹)
 		/// </summary>
-		/// <param name="mazeWalls">미로 배열</param>
+		/// <param name="mazeCells">미로 배열</param>
 		/// <param name="width">너비</param>
 		/// <param name="height">높이</param>
-		private static void GenerateMaze(ref MazeWall[,] mazeWalls, int width, int height)
+		private static void GenerateMaze(ref MazeCell[,] mazeCells, int width, int height)
 		{
 			bool[,] visited = new bool[width, height];
 			Stack<Point> dfsStack = [];
@@ -381,8 +381,8 @@
 					int nx = current.X + directions[dir].X;
 					int ny = current.Y + directions[dir].Y;
 
-					mazeWalls[current.X, current.Y].RemovedClosed((MazeWall.Closed)dir);
-					mazeWalls[nx, ny].RemovedClosed((MazeWall.Closed)((dir + 2) % 4));
+					mazeCells[current.X, current.Y].RemovedClosed((MazeCell.Closed)dir);
+					mazeCells[nx, ny].RemovedClosed((MazeCell.Closed)((dir + 2) % 4));
 
 					visited[nx, ny] = true;
 					dfsStack.Push(new Point(nx, ny));
@@ -401,16 +401,16 @@
 		/// <param name="e"></param>
 		private void GenerateMazeButton_Click(object sender, EventArgs e)
 		{
-			if (mazeWall != null)
+			if (mazeCell != null)
 			{
-				foreach (var wall in mazeWall)
+				foreach (var cell in mazeCell)
 				{
-					this.Controls.Remove(wall.pictureBox);
-					wall.Dispose();
+					this.Controls.Remove(cell.pictureBox);
+                    cell.Dispose();
 				}
 			}
 
-			mazeWall = new MazeWall[(int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value];
+			mazeCell = new MazeCell[(int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value];
 			int size;
 			int widthStart;
 			int heightStart;
@@ -427,54 +427,54 @@
 				widthStart = Size.Width / 2 - Convert.ToInt32(size * (int)SizeNumericUpDown.Value / 2.0);
 			}
 
-			for (int i = 0; i < mazeWall.GetLength(0); i++)
+			for (int i = 0; i < mazeCell.GetLength(0); i++)
 			{
-				for (int j = 0; j < mazeWall.GetLength(1); j++)
+				for (int j = 0; j < mazeCell.GetLength(1); j++)
 				{
-					mazeWall[i, j] = new MazeWall();
+					mazeCell[i, j] = new MazeCell();
 					if (i == 0 && j == 0)
 					{
-						mazeWall[i, j].isNotConnected[0] = true; // Top
-						mazeWall[i, j].isNotConnected[3] = true; // Left
+						mazeCell[i, j].isNotConnected[0] = true; // Top
+						mazeCell[i, j].isNotConnected[3] = true; // Left
 					}
-					else if (i == 0 && j == mazeWall.GetLength(1) - 1)
+					else if (i == 0 && j == mazeCell.GetLength(1) - 1)
 					{
-						mazeWall[i, j].isNotConnected[2] = true; // Bottom
-						mazeWall[i, j].isNotConnected[3] = true; // Left
+						mazeCell[i, j].isNotConnected[2] = true; // Bottom
+						mazeCell[i, j].isNotConnected[3] = true; // Left
 					}
-					else if (i == mazeWall.GetLength(0) - 1 && j == 0)
+					else if (i == mazeCell.GetLength(0) - 1 && j == 0)
 					{
-						mazeWall[i, j].isNotConnected[0] = true; // Top
-						mazeWall[i, j].isNotConnected[1] = true; // Right
+						mazeCell[i, j].isNotConnected[0] = true; // Top
+						mazeCell[i, j].isNotConnected[1] = true; // Right
 					}
-					else if (i == mazeWall.GetLength(0) - 1 && j == mazeWall.GetLength(1) - 1)
+					else if (i == mazeCell.GetLength(0) - 1 && j == mazeCell.GetLength(1) - 1)
 					{
-						mazeWall[i, j].isNotConnected[2] = true; // Bottom
-						mazeWall[i, j].isNotConnected[1] = true; // Right
+						mazeCell[i, j].isNotConnected[2] = true; // Bottom
+						mazeCell[i, j].isNotConnected[1] = true; // Right
 					}
 					else if (i == 0)
 					{
-						mazeWall[i, j].isNotConnected[3] = true; // Left
+						mazeCell[i, j].isNotConnected[3] = true; // Left
 					}
 					else if (j == 0)
 					{
-						mazeWall[i, j].isNotConnected[0] = true; // Top
+						mazeCell[i, j].isNotConnected[0] = true; // Top
 					}
-					else if (i == mazeWall.GetLength(0) - 1)
+					else if (i == mazeCell.GetLength(0) - 1)
 					{
-						mazeWall[i, j].isNotConnected[1] = true; // Right
+						mazeCell[i, j].isNotConnected[1] = true; // Right
 					}
-					else if (j == mazeWall.GetLength(1) - 1)
+					else if (j == mazeCell.GetLength(1) - 1)
 					{
-						mazeWall[i, j].isNotConnected[2] = true; // Bottom
+						mazeCell[i, j].isNotConnected[2] = true; // Bottom
 					}
-					mazeWall[i, j].Size = new(size, size);
-					mazeWall[i, j].Location = new(i * size + widthStart, j * size + heightStart);
-					mazeWall[i, j].AddAllWalls();
-					this.Controls.Add(mazeWall[i, j].pictureBox);
+					mazeCell[i, j].Size = new(size, size);
+					mazeCell[i, j].Location = new(i * size + widthStart, j * size + heightStart);
+					mazeCell[i, j].AddAllWalls();
+					this.Controls.Add(mazeCell[i, j].pictureBox);
 				}
 			}
-			GenerateMaze(ref mazeWall, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value);
+			GenerateMaze(ref mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value);
 			RunButton.Enabled = true;
 		}
 
@@ -525,8 +525,8 @@
 			if (DfsCheckBox.Checked)
 			{
 				Player player = new(Color.Blue);
-				List<Point> dfs = StartDFS(player, mazeWall, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value);
-				player = SimulateMovement(player, dfs, mazeWall);
+				List<Point> dfs = StartDFS(player, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value);
+				player = SimulateMovement(player, dfs, mazeCell);
 				player.Path.RemoveAt(0); // 시작 위치 제외
 				player.Name = "DFS";
 				players.Add(player);
@@ -534,8 +534,8 @@
 			if (BfsCheckBox.Checked)
 			{
 				Player player = new(Color.Red);
-				List<Point> bfs = StartBFS(player, mazeWall, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value);
-				player = SimulateMovement(player, bfs, mazeWall);
+				List<Point> bfs = StartBFS(player, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value);
+				player = SimulateMovement(player, bfs, mazeCell);
 				player.Path.RemoveAt(0); // 시작 위치 제외
 				player.Name = "BFS";
 				players.Add(player);
@@ -543,8 +543,8 @@
 			if (DijkstraCheckBox.Checked)
 			{
                 Player player = new(Color.Green);
-                List<Point> dijkstra = StartDijkstra(player, mazeWall, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value);
-                player = SimulateMovement(player, dijkstra, mazeWall);
+                List<Point> dijkstra = StartDijkstra(player, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value);
+                player = SimulateMovement(player, dijkstra, mazeCell);
                 player.Path.RemoveAt(0); // 시작 위치 제외
                 player.Name = "Dijkstra";
                 players.Add(player);
@@ -557,8 +557,8 @@
 				if (DfsCheckBox.Checked)
 				{
 					Player player = new(Color.Blue);
-					List<Point> dfs = Start2ndDFS(player, mazeWall, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, prevDfsVisited);
-					player = SimulateMovement(player, dfs, mazeWall);
+					List<Point> dfs = Start2ndDFS(player, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, prevDfsVisited);
+					player = SimulateMovement(player, dfs, mazeCell);
 					player.Path.RemoveAt(0); // 시작 위치 제외
 					player.Name = "DFS2";
 					players.Add(player);
@@ -566,8 +566,8 @@
 				if (BfsCheckBox.Checked)
 				{
 					Player player = new(Color.Red);
-					List<Point> bfs = Start2ndBFS(player, mazeWall, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, prevBfsVisited);
-					player = SimulateMovement(player, bfs, mazeWall);
+					List<Point> bfs = Start2ndBFS(player, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, prevBfsVisited);
+					player = SimulateMovement(player, bfs, mazeCell);
 					player.Path.RemoveAt(0); // 시작 위치 제외
 					player.Name = "BFS2";
 					players.Add(player);
@@ -575,8 +575,8 @@
 				if (DijkstraCheckBox.Checked)
 				{
 					Player player = new(Color.Green);
-					List<Point> dijkstra = Start2ndDijkstra(player, mazeWall, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, prevDijkstraVisited);
-					player = SimulateMovement(player, dijkstra, mazeWall);
+					List<Point> dijkstra = Start2ndDijkstra(player, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, prevDijkstraVisited);
+					player = SimulateMovement(player, dijkstra, mazeCell);
 					player.Path.RemoveAt(0); // 시작 위치 제외
 					player.Name = "Dijkstra2";
 					players.Add(player);
@@ -610,7 +610,7 @@
 			}
 
 			int fork = 0, deadEnd = 0;
-            foreach (var cell in mazeWall)
+            foreach (var cell in mazeCell)
 			{
 				if (cell.closedSides.Count == 1)
 				{
@@ -774,8 +774,8 @@
 		/// player 이동
 		/// </summary>
 		/// <param name="newLocation">이동할 위치</param>
-		/// <param name="mazeWalls">미로 배열 정보</param>
-		public void Move(Point newLocation, MazeWall[,] mazeWalls)
+		/// <param name="mazeCells">미로 배열 정보</param>
+		public void Move(Point newLocation, MazeCell[,] mazeCells)
 		{
 			Dictionary<Point, Point?> parent = [];
 			Queue<Point> bfsQueue = new();
@@ -804,8 +804,8 @@
 
 				for (int i = 0; i < 4; i++)
 				{
-					if (!mazeWalls[current.X, current.Y].isNotConnected[i] && 
-						!mazeWalls[current.X, current.Y].closedSides.Contains((MazeWall.Closed)i))
+					if (!mazeCells[current.X, current.Y].isNotConnected[i] && 
+						!mazeCells[current.X, current.Y].closedSides.Contains((MazeCell.Closed)i))
 					{
 						Point next = new(current.X + directions[i].X, current.Y + directions[i].Y);
 						if (!visited.Contains(next))
@@ -841,7 +841,7 @@
 	/// <summary>
 	/// 미로 배열 클래스
 	/// </summary>
-	class MazeWall
+	class MazeCell
 	{
 		public HashSet<Closed> closedSides;
 		public Bitmap bitmap;
@@ -856,7 +856,7 @@
 			Left
 		}
 
-		public MazeWall()
+		public MazeCell()
 		{
 			closedSides = [];
 			bitmap = new Bitmap(800, 800);
@@ -954,7 +954,7 @@
         /// <summary>
         /// 지정된 방향이 닫혀 있는지 여부를 반환
         /// </summary>
-        public bool IsSideClosed(Closed closed) => closedSides.Contains(closed);
+        public bool IsWallClosed(Closed closed) => closedSides.Contains(closed);
 
         /// <summary>
         /// player 위치 색칠
