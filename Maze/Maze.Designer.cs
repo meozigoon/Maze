@@ -130,12 +130,12 @@
             // StraightTimePenalty
             // 
             StraightTimePenalty.AutoSize = true;
-            StraightTimePenalty.Location = new Point(581, 11);
+            StraightTimePenalty.Location = new Point(600, 13);
             StraightTimePenalty.Margin = new Padding(2, 0, 2, 0);
             StraightTimePenalty.Name = "StraightTimePenalty";
-            StraightTimePenalty.Size = new Size(190, 25);
+            StraightTimePenalty.Size = new Size(172, 25);
             StraightTimePenalty.TabIndex = 6;
-            StraightTimePenalty.Text = "미로 설정 클럭 수(ms)";
+            StraightTimePenalty.Text = "직선구간페널티(ms)";
             // 
             // StraightTimePenaltyNumericUpDown
             // 
