@@ -8,8 +8,9 @@
         HashSet<Point> prevBfsVisited = [];
         HashSet<Point> prevDfsVisited = [];
 
-        readonly string csvFilePath = Directory.GetCurrentDirectory() + @"\data\maze_data.csv";
-        readonly string csv2ndFilePath = Directory.GetCurrentDirectory() + @"\data\2_maze_data.csv";
+        readonly string dataFolderPath = Directory.GetCurrentDirectory() + @"\data";
+        readonly string csvDataFilePath = Directory.GetCurrentDirectory() + @"\data\maze_data.csv";
+        readonly string csv2ndDataFilePath = Directory.GetCurrentDirectory() + @"\data\2_maze_data.csv";
 
         enum Direction
         {
@@ -30,15 +31,28 @@
         public Maze()
         {
             InitializeComponent();
-            if (!File.Exists(csvFilePath))
+            try
             {
-                using StreamWriter sw = new(csvFilePath, append: false);
-                sw.WriteLine("Size,StraightTimePenalty,BFS,DFS,BFS_2nd,DFS_2nd");
+                if (!Directory.Exists(dataFolderPath))
+                {
+                    Directory.CreateDirectory(dataFolderPath);
+                }
+                if (!File.Exists(csvDataFilePath))
+                {
+                    using StreamWriter sw = new(csvDataFilePath, append: false);
+                    sw.WriteLine("Size,StraightTimePenalty,BFS,DFS,BFS_2nd,DFS_2nd");
+                }
+                if (!File.Exists(csv2ndDataFilePath))
+                {
+                    using StreamWriter sw = new(csv2ndDataFilePath, append: false);
+                    sw.WriteLine("Size,StraightTimePenalty,BFS,DFS,BFS_2nd,DFS_2nd");
+                }
             }
-            if (!File.Exists(csv2ndFilePath))
+            catch (Exception ex)
             {
-                using StreamWriter sw = new(csv2ndFilePath, append: false);
-                sw.WriteLine("Size,StraightTimePenalty,BFS,DFS,BFS_2nd,DFS_2nd");
+                MessageBox.Show("CSV 파일 오류가 발생했습니다. 경로를 확인하세요.\n" + ex.Message, "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                System.Diagnostics.Process.Start("explorer.exe", dataFolderPath);
+                this.Close();
             }
         }
 
@@ -518,11 +532,11 @@
             {
                 if (!isSecond)
                 {
-                    WriteCsv(csvFilePath);
+                    WriteCsv(csvDataFilePath);
                 }
                 else
                 {
-                    WriteCsv(csv2ndFilePath);
+                    WriteCsv(csv2ndDataFilePath);
                 }
             }
             GenerateMazeButton.Enabled = true;
@@ -565,8 +579,16 @@
                 rowData = rowData.Append(decimal.Parse(Dfs2ndTimeLabel.Text.Split(" ")[2])).ToArray();
             }
 
-            using StreamWriter sw = new(csvFilePath, append: true);
-            sw.WriteLine(string.Join(",", rowData));
+            try
+            {
+                using StreamWriter sw = new(csvFilePath, append: true);
+                sw.WriteLine(string.Join(",", rowData));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("CSV 파일 기록 중 오류가 발생했습니다. 경로를 확인하세요.\n" + ex.Message, "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                System.Diagnostics.Process.Start("explorer.exe", csvFilePath);
+            }
         }
 
         /// <summary>
