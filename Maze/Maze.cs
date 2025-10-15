@@ -7,7 +7,7 @@
 		bool isWrite = false;
 		HashSet<Point> prevBfsVisited = [];
 		HashSet<Point> prevDfsVisited = [];
-		HashSet<Point> prevDijkstraVisited = [];
+		HashSet<Point> prevAstarVisited = [];
 
         readonly string dataFolderPath = Directory.GetCurrentDirectory() + @"\data";
 		readonly string csvDataFilePath = Directory.GetCurrentDirectory() + @"\data\maze_data.csv";
@@ -234,131 +234,151 @@
 		}
 
 		/// <summary>
-		/// 다익스트라 탐색
+		/// A* 탐색
 		/// </summary>
 		/// <param name="player">이동 개체</param>
 		/// <param name="mazeCells">미로 배열</param>
 		/// <param name="width">너비</param>
 		/// <param name="height">높이</param>
 		/// <returns>이동 경로</returns>
-		private List<Point> StartDijkstra(Player player, MazeCell[,] mazeCells, int width, int height)
+		private List<Point> StartAstar(Player player, MazeCell[,] mazeCells, int width, int height)
 		{
-            PriorityQueue<Point, int> dijkstraPriorityQueue = new();
-            Dictionary<Point, int> distances = [];
-            HashSet<Point> visited = [];
-            List<Point> dijkstraMoves = [];
+			PriorityQueue<Point, int> openSet = new();
+			Dictionary<Point, int> gScore = [];
+			HashSet<Point> closedSet = [];
+			List<Point> astarMoves = [];
 
-            Point start = player.Location;
-            distances[start] = 0;
-            dijkstraPriorityQueue.Enqueue(start, 0);
+			Point start = player.Location;
+			Point goal = new(width - 1, height - 1);
+			gScore[start] = 0;
+			openSet.Enqueue(start, CalculateManhattanDistance(start, goal));
 
-            while (dijkstraPriorityQueue.Count > 0)
-            {
-                Point current = dijkstraPriorityQueue.Dequeue();
+			while (openSet.Count > 0)
+			{
+				Point current = openSet.Dequeue();
 
-                if (!visited.Add(current))
-                {
-                    continue;
-                }
+				if (!closedSet.Add(current))
+				{
+					continue;
+				}
 
-                dijkstraMoves.Add(current);
+				astarMoves.Add(current);
 
-                if (current == new Point(width - 1, height - 1))
-                {
-                    break;
-                }
+				if (current == goal)
+				{
+					if (isSecond)
+					{
+						prevAstarVisited = closedSet;
+					}
 
-                for (int i = 0; i < 4; i++)
-                {
-                    if (!mazeCells[current.X, current.Y].isNotConnected[i] && 
+					return astarMoves;
+				}
+
+				for (int i = 0; i < 4; i++)
+				{
+					if (!mazeCells[current.X, current.Y].isNotConnected[i] && 
 						!mazeCells[current.X, current.Y].closedSides.Contains((MazeCell.Closed)i))
-                    {
-                        Point next = new(current.X + directions[i].X, current.Y + directions[i].Y);
-                        int newDistance = distances[current] + 1;
+					{
+						Point next = new(current.X + directions[i].X, current.Y + directions[i].Y);
+						int tentativeGScore = gScore[current] + 1;
 
-                        if (!distances.TryGetValue(next, out int existingDistance) || newDistance < existingDistance)
-                        {
-                            distances[next] = newDistance;
-                            dijkstraPriorityQueue.Enqueue(next, newDistance);
-                        }
-                    }
-                }
-            }
+						if (!gScore.TryGetValue(next, out int existingGScore) || tentativeGScore < existingGScore)
+						{
+							gScore[next] = tentativeGScore;
+							int priority = tentativeGScore + CalculateManhattanDistance(next, goal);
+							openSet.Enqueue(next, priority);
+						}
+					}
+				}
+			}
 
-            if (isSecond)
-            {
-                prevDijkstraVisited = visited;
-            }
+			if (isSecond)
+			{
+				prevAstarVisited = closedSet;
+			}
 
-            return dijkstraMoves;
-        }
+			return astarMoves;
+		}
 
-        /// <summary>
-        /// 2차 다익스트라 탐색
-        /// </summary>
-        /// <param name="player">이동 개체</param>
-        /// <param name="mazeCells">미로 배열</param>
-        /// <param name="width">너비</param>
-        /// <param name="height">높이</param>
-        /// <param name="visited1st">1차 visited</param>
-        /// <returns>이동 경로</returns>
-        private static List<Point> Start2ndDijkstra(Player player, MazeCell[,] mazeCells, int width, int height, HashSet<Point> visited1st)
+		/// <summary>
+		/// 2차 A* 탐색
+		/// </summary>
+		/// <param name="player">이동 개체</param>
+		/// <param name="mazeCells">미로 배열</param>
+		/// <param name="width">너비</param>
+		/// <param name="height">높이</param>
+		/// <param name="visited1st">1차 visited</param>
+		/// <returns>이동 경로</returns>
+		private static List<Point> Start2ndAstar(Player player, MazeCell[,] mazeCells, int width, int height, HashSet<Point> visited1st)
 		{
-            PriorityQueue<Point, int> priorityQueue = new();
-            Dictionary<Point, int> distances = [];
-            HashSet<Point> visited = [];
-            List<Point> dijkstraMoves = [];
+			PriorityQueue<Point, int> openSet = new();
+			Dictionary<Point, int> gScore = [];
+			HashSet<Point> closedSet = [];
+			List<Point> astarMoves = [];
 
-            Point start = player.Location;
-            if (!visited1st.Contains(start))
-            {
-                return dijkstraMoves;
-            }
+			Point start = player.Location;
+			Point goal = new(width - 1, height - 1);
+			if (!visited1st.Contains(start))
+			{
+				return astarMoves;
+			}
 
-            distances[start] = 0;
-            priorityQueue.Enqueue(start, 0);
+			gScore[start] = 0;
+			openSet.Enqueue(start, CalculateManhattanDistance(start, goal));
 
-            while (priorityQueue.Count > 0)
-            {
-                Point current = priorityQueue.Dequeue();
+			while (openSet.Count > 0)
+			{
+				Point current = openSet.Dequeue();
 
-                if (!visited1st.Contains(current) || !visited.Add(current))
-                {
-                    continue;
-                }
+				if (!visited1st.Contains(current) || !closedSet.Add(current))
+				{
+					continue;
+				}
 
-                dijkstraMoves.Add(current);
+				astarMoves.Add(current);
 
-                if (current == new Point(width - 1, height - 1))
-                {
-                    break;
-                }
+				if (current == goal)
+				{
+					return astarMoves;
+				}
 
-                for (int i = 0; i < 4; i++)
-                {
-                    if (!mazeCells[current.X, current.Y].isNotConnected[i] &&
-                            !mazeCells[current.X, current.Y].closedSides.Contains((MazeCell.Closed)i))
-                    {
-                        Point next = new(current.X + directions[i].X, current.Y + directions[i].Y);
+				for (int i = 0; i < 4; i++)
+				{
+					if (!mazeCells[current.X, current.Y].isNotConnected[i] &&
+						!mazeCells[current.X, current.Y].closedSides.Contains((MazeCell.Closed)i))
+					{
+						Point next = new(current.X + directions[i].X, current.Y + directions[i].Y);
 
-                        if (!visited1st.Contains(next))
-                        {
-                            continue;
-                        }
+						if (!visited1st.Contains(next))
+						{
+							continue;
+						}
 
-                        int newDistance = distances[current] + 1;
+						int tentativeGScore = gScore[current] + 1;
 
-                        if (!distances.TryGetValue(next, out int existingDistance) || newDistance < existingDistance)
-                        {
-                            distances[next] = newDistance;
-                            priorityQueue.Enqueue(next, newDistance);
-                        }
-                    }
-                }
-            }
+						if (!gScore.TryGetValue(next, out int existingGScore) || tentativeGScore < existingGScore)
+						{
+							gScore[next] = tentativeGScore;
+							int priority = tentativeGScore + CalculateManhattanDistance(next, goal);
+							openSet.Enqueue(next, priority);
+						}
+					}
+				}
+			}
 
-            return dijkstraMoves;
-        }
+			return astarMoves;
+		}
+
+		/// <summary>
+		/// 맨해튼 거리 계산
+		/// </summary>
+		/// <param name="point">현재 위치</param>
+		/// <param name="goal">목표 위치</param>
+		/// <returns>거리</returns>
+		private static int CalculateManhattanDistance(Point point, Point goal)
+		{
+			return Math.Abs(point.X - goal.X) + Math.Abs(point.Y - goal.Y);
+		}
 
         /// <summary>
         /// 움직임 시각화
@@ -426,19 +446,19 @@
 				{
 					BfsTimeLabel.Text = "BFS : " + (BfsCheckBox.Checked ? (time["BFS"] / 1000.0 + " s") : " ");
 					DfsTimeLabel.Text = "DFS : " + (DfsCheckBox.Checked ? (time["DFS"] / 1000.0 + " s") : " ");
-					DijkstraTimeLabel.Text = "Dijkstra: " + (DijkstraCheckBox.Checked ? (time["Dijkstra"] / 1000.0 + " s") : " ");
+					AstarTimeLabel.Text = "A* : " + (AstarCheckBox.Checked ? (time["Astar"] / 1000.0 + " s") : " ");
 
                     if (isSecond)
 					{
 						Bfs2ndTimeLabel.Text = "BFS : " + time["BFS2"] / 1000.0 + " s";
 						Dfs2ndTimeLabel.Text = "DFS : " + time["DFS2"] / 1000.0 + " s";
-						Dijkstra2ndTimeLabel.Text = "Dijkstra: " + (DijkstraCheckBox.Checked ? (time["Dijkstra2"] / 1000.0 + " s") : " ");
+						Astar2ndTimeLabel.Text = "A* : " + (AstarCheckBox.Checked ? (time["Astar2"] / 1000.0 + " s") : " ");
                     }
 					else
 					{
 						Bfs2ndTimeLabel.Text = "BFS : ";
 						Dfs2ndTimeLabel.Text = "DFS : ";
-						Dijkstra2ndTimeLabel.Text = "Dijkstra: ";
+						Astar2ndTimeLabel.Text = "A* : ";
                     }
 					break; // 이동할 수 없을 때 종료
 				}
@@ -618,7 +638,7 @@
 		private void RunButton_Click(object sender, EventArgs e)
 		{
 			List<Player> players = [];
-			if (!DfsCheckBox.Checked && !BfsCheckBox.Checked && !DijkstraCheckBox.Checked)
+			if (!DfsCheckBox.Checked && !BfsCheckBox.Checked && !AstarCheckBox.Checked)
 			{
 				MessageBox.Show("알고리즘을 선택해야 합니다.", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				return;
@@ -641,15 +661,15 @@
 				player.Name = "BFS";
 				players.Add(player);
 			}
-			if (DijkstraCheckBox.Checked)
+			if (AstarCheckBox.Checked)
 			{
-                Player player = new(Color.Green);
-                List<Point> dijkstra = StartDijkstra(player, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value);
-                player = SimulateMovement(player, dijkstra, mazeCell);
-                player.Path.RemoveAt(0); // 시작 위치 제외
-                player.Name = "Dijkstra";
-                players.Add(player);
-            }
+				Player player = new(Color.Green);
+				List<Point> astar = StartAstar(player, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value);
+				player = SimulateMovement(player, astar, mazeCell);
+				player.Path.RemoveAt(0); // 시작 위치 제외
+				player.Name = "Astar";
+				players.Add(player);
+			}
 			GenerateMazeButton.Enabled = false;
 			RunButton.Enabled = false;
 
@@ -673,17 +693,17 @@
 					player.Name = "BFS2";
 					players.Add(player);
 				}
-				if (DijkstraCheckBox.Checked)
+				if (AstarCheckBox.Checked)
 				{
 					Player player = new(Color.Green);
-					List<Point> dijkstra = Start2ndDijkstra(player, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, prevDijkstraVisited);
-					player = SimulateMovement(player, dijkstra, mazeCell);
+					List<Point> astar = Start2ndAstar(player, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, prevAstarVisited);
+					player = SimulateMovement(player, astar, mazeCell);
 					player.Path.RemoveAt(0); // 시작 위치 제외
-					player.Name = "Dijkstra2";
+					player.Name = "Astar2";
 					players.Add(player);
-                }
-            }
-            SimulateMove(players, (int)StraightTimePenaltyNumericUpDown.Value, (int)RotationPenaltyNumericUpDown.Value);
+				}
+			}
+			SimulateMove(players, (int)StraightTimePenaltyNumericUpDown.Value, (int)RotationPenaltyNumericUpDown.Value);
 
 			if (isWrite)
 			{
@@ -731,14 +751,14 @@
 				fork, deadEnd,
                 decimal.Parse(BfsTimeLabel.Text.Split(" ")[2]),
 				decimal.Parse(DfsTimeLabel.Text.Split(" ")[2]),
-				decimal.Parse(DijkstraTimeLabel.Text.Split(" ")[1])
+				decimal.Parse(AstarTimeLabel.Text.Split(" ")[2])
             ];
 
 			if (isSecond)
 			{
 				rowData = rowData.Append(decimal.Parse(Bfs2ndTimeLabel.Text.Split(" ")[2])).ToArray();
 				rowData = rowData.Append(decimal.Parse(Dfs2ndTimeLabel.Text.Split(" ")[2])).ToArray();
-                rowData = rowData.Append(decimal.Parse(Dijkstra2ndTimeLabel.Text.Split(" ")[1])).ToArray();
+                rowData = rowData.Append(decimal.Parse(Astar2ndTimeLabel.Text.Split(" ")[2])).ToArray();
             }
 
 			try
@@ -842,12 +862,12 @@
 					if (!File.Exists(csvDataFilePath))
 					{
 						using StreamWriter sw = new(csvDataFilePath, append: false);
-						sw.WriteLine("Size,StraightTimePenalty,RotationPenalty,Fork,DeadEnd,BFS,DFS,Dijkstra");
+						sw.WriteLine("Size,StraightTimePenalty,RotationPenalty,Fork,DeadEnd,BFS,DFS,Astar");
 					}
 					if (!File.Exists(csv2ndDataFilePath))
 					{
 						using StreamWriter sw = new(csv2ndDataFilePath, append: false);
-						sw.WriteLine("Size,StraightTimePenalty,RotationPenalty,Fork,DeadEnd,BFS,DFS,Dijkstra,BFS_2nd,DFS_2nd,Dijkstra_2nd");
+						sw.WriteLine("Size,StraightTimePenalty,RotationPenalty,Fork,DeadEnd,BFS,DFS,Astar,BFS_2nd,DFS_2nd,Astar_2nd");
 					}
 				}
 				catch (Exception ex)

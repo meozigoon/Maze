@@ -48,14 +48,14 @@
             Bfs2ndTimeLabel = new Label();
             LoopGroupBox = new GroupBox();
             Run2ndGroupBox = new GroupBox();
-            Dijkstra2ndTimeLabel = new Label();
+            Astar2ndTimeLabel = new Label();
             WriteButton = new Button();
             CheckWriteLabel = new Label();
             DfsCheckBox = new CheckBox();
             groupBox1 = new GroupBox();
             BfsCheckBox = new CheckBox();
-            DijkstraCheckBox = new CheckBox();
-            DijkstraTimeLabel = new Label();
+            AstarCheckBox = new CheckBox();
+            AstarTimeLabel = new Label();
             ((System.ComponentModel.ISupportInitialize)SizeNumericUpDown).BeginInit();
             ((System.ComponentModel.ISupportInitialize)StraightTimePenaltyNumericUpDown).BeginInit();
             ((System.ComponentModel.ISupportInitialize)RotationPenaltyNumericUpDown).BeginInit();
@@ -271,7 +271,7 @@
             // 
             // Run2ndGroupBox
             // 
-            Run2ndGroupBox.Controls.Add(Dijkstra2ndTimeLabel);
+            Run2ndGroupBox.Controls.Add(Astar2ndTimeLabel);
             Run2ndGroupBox.Controls.Add(Bfs2ndTimeLabel);
             Run2ndGroupBox.Controls.Add(Dfs2ndTimeLabel);
             Run2ndGroupBox.Controls.Add(Check2ndRunButton);
@@ -283,15 +283,15 @@
             Run2ndGroupBox.TabStop = false;
             Run2ndGroupBox.Text = "2nd";
             // 
-            // Dijkstra2ndTimeLabel
+            // Astar2ndTimeLabel
             // 
-            Dijkstra2ndTimeLabel.AutoSize = true;
-            Dijkstra2ndTimeLabel.Location = new Point(8, 80);
-            Dijkstra2ndTimeLabel.Margin = new Padding(2, 0, 2, 0);
-            Dijkstra2ndTimeLabel.Name = "Dijkstra2ndTimeLabel";
-            Dijkstra2ndTimeLabel.Size = new Size(81, 25);
-            Dijkstra2ndTimeLabel.TabIndex = 18;
-            Dijkstra2ndTimeLabel.Text = "Dijkstra: ";
+            Astar2ndTimeLabel.AutoSize = true;
+            Astar2ndTimeLabel.Location = new Point(8, 80);
+            Astar2ndTimeLabel.Margin = new Padding(2, 0, 2, 0);
+            Astar2ndTimeLabel.Name = "Astar2ndTimeLabel";
+            Astar2ndTimeLabel.Size = new Size(61, 25);
+            Astar2ndTimeLabel.TabIndex = 18;
+            Astar2ndTimeLabel.Text = "A* : ";
             // 
             // WriteButton
             // 
@@ -328,7 +328,7 @@
             // groupBox1
             // 
             groupBox1.Controls.Add(BfsCheckBox);
-            groupBox1.Controls.Add(DijkstraCheckBox);
+            groupBox1.Controls.Add(AstarCheckBox);
             groupBox1.Controls.Add(DfsCheckBox);
             groupBox1.Location = new Point(919, 5);
             groupBox1.Name = "groupBox1";
@@ -349,27 +349,27 @@
             BfsCheckBox.Text = "BFS";
             BfsCheckBox.UseVisualStyleBackColor = true;
             // 
-            // DijkstraCheckBox
+            // AstarCheckBox
             // 
-            DijkstraCheckBox.AutoSize = true;
-            DijkstraCheckBox.Checked = true;
-            DijkstraCheckBox.CheckState = CheckState.Checked;
-            DijkstraCheckBox.Location = new Point(156, 43);
-            DijkstraCheckBox.Name = "DijkstraCheckBox";
-            DijkstraCheckBox.Size = new Size(97, 29);
-            DijkstraCheckBox.TabIndex = 24;
-            DijkstraCheckBox.Text = "Dijkstra";
-            DijkstraCheckBox.UseVisualStyleBackColor = true;
+            AstarCheckBox.AutoSize = true;
+            AstarCheckBox.Checked = true;
+            AstarCheckBox.CheckState = CheckState.Checked;
+            AstarCheckBox.Location = new Point(156, 43);
+            AstarCheckBox.Name = "AstarCheckBox";
+            AstarCheckBox.Size = new Size(66, 29);
+            AstarCheckBox.TabIndex = 24;
+            AstarCheckBox.Text = "A*";
+            AstarCheckBox.UseVisualStyleBackColor = true;
             // 
-            // DijkstraTimeLabel
+            // AstarTimeLabel
             // 
-            DijkstraTimeLabel.AutoSize = true;
-            DijkstraTimeLabel.Location = new Point(9, 149);
-            DijkstraTimeLabel.Margin = new Padding(2, 0, 2, 0);
-            DijkstraTimeLabel.Name = "DijkstraTimeLabel";
-            DijkstraTimeLabel.Size = new Size(81, 25);
-            DijkstraTimeLabel.TabIndex = 25;
-            DijkstraTimeLabel.Text = "Dijkstra: ";
+            AstarTimeLabel.AutoSize = true;
+            AstarTimeLabel.Location = new Point(9, 149);
+            AstarTimeLabel.Margin = new Padding(2, 0, 2, 0);
+            AstarTimeLabel.Name = "AstarTimeLabel";
+            AstarTimeLabel.Size = new Size(61, 25);
+            AstarTimeLabel.TabIndex = 25;
+            AstarTimeLabel.Text = "A* : ";
             // 
             // Maze
             // 
@@ -377,7 +377,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.White;
             ClientSize = new Size(1200, 800);
-            Controls.Add(DijkstraTimeLabel);
+            Controls.Add(AstarTimeLabel);
             Controls.Add(groupBox1);
             Controls.Add(CheckWriteLabel);
             Controls.Add(WriteButton);
@@ -439,8 +439,8 @@
         private GroupBox groupBox1;
         private CheckBox checkBox4;
         private CheckBox BfsCheckBox;
-        private CheckBox DijkstraCheckBox;
-        private Label Dijkstra2ndTimeLabel;
-        private Label DijkstraTimeLabel;
+        private CheckBox AstarCheckBox;
+        private Label Astar2ndTimeLabel;
+        private Label AstarTimeLabel;
     }
 }

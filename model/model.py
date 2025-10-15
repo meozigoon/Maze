@@ -17,7 +17,7 @@ FEATURE_COLUMNS = [
     "Fork",
     "DeadEnd",
 ]
-TARGET_COLUMNS = ["BFS", "DFS", "Dijkstra"]
+TARGET_COLUMNS = ["BFS", "DFS", "Astar"]
 
 
 @dataclass
@@ -317,7 +317,7 @@ def predict_faster_algorithm(
 def parse_arguments() -> argparse.Namespace:
     default_csv = Path(__file__).parent / "data" / "maze_data.csv"
     parser = argparse.ArgumentParser(
-        description="Train a model to predict which algorithm (BFS, DFS, or Dijkstra) solves a maze fastest."
+        description="Train a model to predict which algorithm (BFS, DFS, or A*) solves a maze fastest."
     )
     parser.add_argument("--csv-path", type=Path, default=default_csv, help="Path to the maze dataset CSV file.")
     parser.add_argument("--batch-size", type=int, default=32, help="Mini-batch size for training.")

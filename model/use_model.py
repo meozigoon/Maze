@@ -23,7 +23,7 @@ sys.modules["maze_model_module"] = maze_model
 spec.loader.exec_module(maze_model)
 
 FEATURE_COLUMNS = maze_model.FEATURE_COLUMNS
-TARGET_COLUMNS = tuple(getattr(maze_model, "TARGET_COLUMNS", ("BFS", "DFS", "Dijkstra")))
+TARGET_COLUMNS = tuple(getattr(maze_model, "TARGET_COLUMNS", ("BFS", "DFS", "Astar")))
 MazeNet = maze_model.MazeNet
 NormalizationStats = maze_model.NormalizationStats
 predict_faster_algorithm = maze_model.predict_faster_algorithm
