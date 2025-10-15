@@ -16,6 +16,14 @@ FEATURE_COLUMNS = [
     "RotationPenalty",
     "Fork",
     "DeadEnd",
+    "BranchDeg1",
+    "BranchDeg2",
+    "BranchDeg3",
+    "BranchDeg4",
+    "LongestStraightCorridor",
+    "DeadEndChainDepthAvg",
+    "DeadEndChainDepthMax",
+    "GoalDirectionOpenness",
 ]
 TARGET_COLUMNS = ["BFS", "DFS", "Astar"]
 

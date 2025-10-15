@@ -35,6 +35,14 @@ EXAMPLE_FEATURES: Dict[str, float] = {
     "RotationPenalty": 150,
     "Fork": 13,
     "DeadEnd": 11,
+    "BranchDeg1": 11,
+    "BranchDeg2": 80,
+    "BranchDeg3": 9,
+    "BranchDeg4": 0,
+    "LongestStraightCorridor": 5,
+    "DeadEndChainDepthAvg": 4.55,
+    "DeadEndChainDepthMax": 20,
+    "GoalDirectionOpenness": 0.5,
 }
 
 

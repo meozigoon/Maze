@@ -1,4 +1,4 @@
-﻿namespace Maze
+namespace Maze
 {
 	public partial class Maze : Form
 	{
@@ -29,6 +29,9 @@
 			new(-1, 0), // Left
 		];
 
+		/// <summary>
+		/// 미로 시뮬레이터 폼을 초기화합니다.
+		/// </summary>
 		public Maze()
 		{
 			InitializeComponent();
@@ -518,8 +521,8 @@
 		/// <summary>
 		/// 미로 생성 버튼 클릭 시
 		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
+		/// <param name="sender">이벤트를 발생시킨 컨트롤</param>
+		/// <param name="e">이벤트 데이터</param>
 		private void GenerateMazeButton_Click(object sender, EventArgs e)
 		{
 			if (mazeCell != null)
@@ -602,8 +605,8 @@
 		/// <summary>
 		/// 사이즈 변경 시 최소 크기 제한
 		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
+		/// <param name="sender">이벤트를 발생시킨 컨트롤</param>
+		/// <param name="e">이벤트 인자</param>
 		private void Maze_SizeChanged(object sender, EventArgs e)
 		{
 			if (this.Size.Width < 1200)
@@ -619,8 +622,8 @@
 		/// <summary>
 		/// 크기 변경 시 최소 크기 제한 및 라벨 갱신
 		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
+		/// <param name="sender">이벤트를 발생시킨 컨트롤</param>
+		/// <param name="e">이벤트 인자</param>
 		private void SizeNumericUpDown_ValueChanged(object sender, EventArgs e)
 		{
 			if (SizeNumericUpDown.Value < 2)
@@ -633,8 +636,8 @@
 		/// <summary>
 		/// 실행 버튼 클릭 시
 		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
+		/// <param name="sender">이벤트를 발생시킨 컨트롤</param>
+		/// <param name="e">이벤트 인자</param>
 		private void RunButton_Click(object sender, EventArgs e)
 		{
 			List<Player> players = [];
@@ -725,46 +728,147 @@
 		/// <param name="csvFilePath">csv 파일 경로</param>
 		private void WriteCsv(string csvFilePath)
 		{
-            if (string.IsNullOrEmpty(csvFilePath))
+			if (string.IsNullOrEmpty(csvFilePath))
 			{
 				return;
 			}
 
-			int fork = 0, deadEnd = 0;
-            foreach (var cell in mazeCell)
-			{
-				if (cell.closedSides.Count == 1)
-				{
-					deadEnd++;
-                }
-				else if (cell.closedSides.Count == 3)
-				{
-					fork++;
-				}
-            }
+			int width = mazeCell.GetLength(0);
+			int height = mazeCell.GetLength(1);
+			int fork = 0;
+			int deadEnd = 0;
 
-            decimal[] rowData =
-			[
-				(int)SizeNumericUpDown.Value,
-				(int)StraightTimePenaltyNumericUpDown.Value,
-				(int)RotationPenaltyNumericUpDown.Value,
-				fork, deadEnd,
-                decimal.Parse(BfsTimeLabel.Text.Split(" ")[2]),
+			int[,] openMask = new int[width, height];
+			int[] openDegreeCounts = new int[5];
+			int goalAlignedEdges = 0;
+			int totalOpenEdges = 0;
+			Point goal = new(width - 1, height - 1);
+
+			for (int x = 0; x < width; x++)
+			{
+				for (int y = 0; y < height; y++)
+				{
+					MazeCell cell = mazeCell[x, y];
+					int mask = 0;
+
+					for (int dir = 0; dir < directions.Length; dir++)
+					{
+						if (cell.isNotConnected[dir] || cell.closedSides.Contains((MazeCell.Closed)dir))
+						{
+							continue;
+						}
+
+						mask |= 1 << dir;
+						totalOpenEdges++;
+
+						int nx = x + directions[dir].X;
+						int ny = y + directions[dir].Y;
+						int currentDistance = Math.Abs(goal.X - x) + Math.Abs(goal.Y - y);
+						int nextDistance = Math.Abs(goal.X - nx) + Math.Abs(goal.Y - ny);
+						if (nextDistance < currentDistance)
+						{
+							goalAlignedEdges++;
+						}
+					}
+
+					openMask[x, y] = mask;
+
+					int openCount = CountBits(mask);
+					if (openCount >= 0 && openCount < openDegreeCounts.Length)
+					{
+						openDegreeCounts[openCount]++;
+					}
+
+					if (cell.closedSides.Count == 1)
+					{
+						deadEnd++;
+					}
+					else if (cell.closedSides.Count == 3)
+					{
+						fork++;
+					}
+				}
+			}
+
+			int longestCorridor = 0;
+			int deadEndChainSum = 0;
+			int deadEndChainMax = 0;
+			int deadEndChainCount = 0;
+
+			for (int x = 0; x < width; x++)
+			{
+				for (int y = 0; y < height; y++)
+				{
+					int mask = openMask[x, y];
+					int openCount = CountBits(mask);
+
+					if (openCount == 1)
+					{
+						int depth = ComputeDeadEndChainDepth(x, y, openMask, width, height);
+						deadEndChainSum += depth;
+						if (depth > deadEndChainMax)
+						{
+							deadEndChainMax = depth;
+						}
+						deadEndChainCount++;
+					}
+
+					if (IsCorridorMask(mask))
+					{
+						GetCorridorDirections(mask, out int dirA, out int dirB);
+						int corridorLength =
+							1
+							+ CountCorridorCellsInDirection(x, y, dirA, openMask, width, height)
+							+ CountCorridorCellsInDirection(x, y, dirB, openMask, width, height);
+
+						if (corridorLength > longestCorridor)
+						{
+							longestCorridor = corridorLength;
+						}
+					}
+				}
+			}
+
+			decimal deadEndChainAverage = deadEndChainCount > 0 ? (decimal)deadEndChainSum / deadEndChainCount : 0m;
+			decimal deadEndChainAverageRounded = decimal.Round(deadEndChainAverage, 2, MidpointRounding.AwayFromZero);
+			decimal goalDirectionOpenness = totalOpenEdges > 0 ? (decimal)goalAlignedEdges / totalOpenEdges : 0m;
+
+			List<decimal> rowData = new()
+			{
+				(decimal)SizeNumericUpDown.Value,
+				(decimal)StraightTimePenaltyNumericUpDown.Value,
+				(decimal)RotationPenaltyNumericUpDown.Value,
+				fork,
+				deadEnd,
+				openDegreeCounts.Length > 1 ? openDegreeCounts[1] : 0,
+				openDegreeCounts.Length > 2 ? openDegreeCounts[2] : 0,
+				openDegreeCounts.Length > 3 ? openDegreeCounts[3] : 0,
+				openDegreeCounts.Length > 4 ? openDegreeCounts[4] : 0,
+				longestCorridor,
+				deadEndChainAverageRounded,
+				deadEndChainMax,
+				goalDirectionOpenness,
+				decimal.Parse(BfsTimeLabel.Text.Split(" ")[2]),
 				decimal.Parse(DfsTimeLabel.Text.Split(" ")[2]),
 				decimal.Parse(AstarTimeLabel.Text.Split(" ")[2])
-            ];
+			};
 
 			if (isSecond)
 			{
-				rowData = rowData.Append(decimal.Parse(Bfs2ndTimeLabel.Text.Split(" ")[2])).ToArray();
-				rowData = rowData.Append(decimal.Parse(Dfs2ndTimeLabel.Text.Split(" ")[2])).ToArray();
-                rowData = rowData.Append(decimal.Parse(Astar2ndTimeLabel.Text.Split(" ")[2])).ToArray();
-            }
+				rowData.Add(decimal.Parse(Bfs2ndTimeLabel.Text.Split(" ")[2]));
+				rowData.Add(decimal.Parse(Dfs2ndTimeLabel.Text.Split(" ")[2]));
+				rowData.Add(decimal.Parse(Astar2ndTimeLabel.Text.Split(" ")[2]));
+			}
 
 			try
 			{
 				using StreamWriter sw = new(csvFilePath, append: true);
-				sw.WriteLine(string.Join(",", rowData));
+				string[] formattedRow = new string[rowData.Count];
+				for (int i = 0; i < rowData.Count; i++)
+				{
+					formattedRow[i] = rowData[i].ToString(System.Globalization.CultureInfo.InvariantCulture);
+				}
+				sw.WriteLine(string.Join(",", formattedRow));
 			}
 			catch (Exception ex)
 			{
@@ -773,11 +877,184 @@
 			}
 		}
 
+        /// <summary>
+        /// 1인 비트 수 계산
+        /// </summary>
+        /// <param name="mask">비트 수 확인할 수</param>
+        /// <returns>1인 비트 수</returns>
+        private static int CountBits(int mask)
+		{
+			int count = 0;
+			for (int i = 0; i < 4; i++)
+			{
+				if ((mask & (1 << i)) != 0)
+				{
+					count++;
+				}
+			}
+			return count;
+		}
+
+		/// <summary>
+		/// 주어진 비트 마스크가 직선 복도 형태인지 판별합니다.
+		/// </summary>
+		/// <param name="mask">셀의 네 방향 개방 여부를 나타내는 비트 마스크</param>
+		/// <returns>직선 복도라면 true, 아니면 false</returns>
+		private static bool IsCorridorMask(int mask)
+		{
+			bool top = (mask & (1 << 0)) != 0;
+			bool right = (mask & (1 << 1)) != 0;
+			bool bottom = (mask & (1 << 2)) != 0;
+			bool left = (mask & (1 << 3)) != 0;
+
+			return (top && bottom && !right && !left) || (right && left && !top && !bottom);
+		}
+
+		/// <summary>
+		/// 직선 복도 마스크가 가리키는 두 방향 인덱스를 반환합니다.
+		/// </summary>
+		/// <param name="mask">현재 셀의 개방 방향을 나타내는 비트 마스크</param>
+		/// <param name="dirA">첫 번째 개방 방향 인덱스</param>
+		/// <param name="dirB">두 번째 개방 방향 인덱스</param>
+		private static void GetCorridorDirections(int mask, out int dirA, out int dirB)
+		{
+			if ((mask & (1 << 0)) != 0)
+			{
+				dirA = 0;
+				dirB = 2;
+			}
+			else
+			{
+				dirA = 1;
+				dirB = 3;
+			}
+		}
+
+		/// <summary>
+		/// 특정 방향으로 이어지는 직선 복도의 길이를 계산합니다.
+		/// </summary>
+		/// <param name="startX">시작 X 좌표</param>
+		/// <param name="startY">시작 Y 좌표</param>
+		/// <param name="direction">이동할 방향 인덱스</param>
+		/// <param name="openMask">셀별 개방 상태 비트 마스크 배열</param>
+		/// <param name="width">미로 너비</param>
+		/// <param name="height">미로 높이</param>
+		/// <returns>연속된 복도 셀 수</returns>
+		private static int CountCorridorCellsInDirection(int startX, int startY, int direction, int[,] openMask, int width, int height)
+		{
+			int count = 0;
+			int currentX = startX;
+			int currentY = startY;
+
+			while (true)
+			{
+				int currentMask = openMask[currentX, currentY];
+				if ((currentMask & (1 << direction)) == 0)
+				{
+					break;
+				}
+
+				int nextX = currentX + directions[direction].X;
+				int nextY = currentY + directions[direction].Y;
+				if (nextX < 0 || nextX >= width || nextY < 0 || nextY >= height)
+				{
+					break;
+				}
+
+				int nextMask = openMask[nextX, nextY];
+				if ((nextMask & (1 << ((direction + 2) % 4))) == 0)
+				{
+					break;
+				}
+
+				if (!IsCorridorMask(nextMask))
+				{
+					break;
+				}
+
+				count++;
+				currentX = nextX;
+				currentY = nextY;
+			}
+
+			return count;
+		}
+
+        /// <summary>
+        /// 막다른 셀에서 갈림길을 만날 때까지의 체인 깊이를 계산합니다.
+        /// </summary>
+        /// <param name="startX">시작 X 좌표</param>
+        /// <param name="startY">시작 Y 좌표</param>
+        /// <param name="openMask">셀별 개방 상태 비트 마스크 배열</param>
+        /// <param name="width">미로 너비</param>
+        /// <param name="height">미로 높이</param>
+        /// <returns>막다른길 체인 길이</returns>
+        private static int ComputeDeadEndChainDepth(int startX, int startY, int[,] openMask, int width, int height)
+		{
+			int depth = 0;
+			int currentX = startX;
+			int currentY = startY;
+			int previousDirection = -1;
+
+			while (true)
+			{
+				int mask = openMask[currentX, currentY];
+				int nextDirection = -1;
+
+				for (int dir = 0; dir < 4; dir++)
+				{
+					if ((mask & (1 << dir)) == 0)
+					{
+						continue;
+					}
+
+					if (previousDirection != -1 && dir == (previousDirection + 2) % 4)
+					{
+						continue;
+					}
+
+					nextDirection = dir;
+					break;
+				}
+
+				if (nextDirection == -1)
+				{
+					break;
+				}
+
+				int nextX = currentX + directions[nextDirection].X;
+				int nextY = currentY + directions[nextDirection].Y;
+				if (nextX < 0 || nextX >= width || nextY < 0 || nextY >= height)
+				{
+					break;
+				}
+
+				int nextMask = openMask[nextX, nextY];
+				if ((nextMask & (1 << ((nextDirection + 2) % 4))) == 0)
+				{
+					break;
+				}
+
+				depth++;
+
+				if (CountBits(nextMask) != 2)
+				{
+					break;
+				}
+
+				previousDirection = nextDirection;
+				currentX = nextX;
+				currentY = nextY;
+			}
+
+			return depth;
+		}
+
 		/// <summary>
 		/// keydown 이벤트 (Enter: 미로 생성, Space: 실행)
 		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
+		/// <param name="sender">이벤트를 발생시킨 컨트롤</param>
+		/// <param name="e">이벤트 인자</param>
 		private void SizeNumericUpDown_KeyDown(object sender, KeyEventArgs e)
 		{
 			if (e.KeyCode == Keys.Enter)
@@ -793,8 +1070,8 @@
 		/// <summary>
 		/// 반복 실행 버튼 클릭 시
 		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
+		/// <param name="sender">이벤트를 발생시킨 컨트롤</param>
+		/// <param name="e">이벤트 인자</param>
 		private void RunLoopButton_Click(object sender, EventArgs e)
 		{
 			RunLoopButton.Enabled = false;
@@ -819,8 +1096,8 @@
 		/// <summary>
 		/// 반복 실행 횟수 keydown 이벤트 (Enter: 반복 실행)
 		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
+		/// <param name="sender">이벤트를 발생시킨 컨트롤</param>
+		/// <param name="e">이벤트 인자</param>
 		private void LoopLimitNumericUpDown_KeyDown(object sender, KeyEventArgs e)
 		{
 			if (e.KeyCode == Keys.Enter)
@@ -832,8 +1109,8 @@
 		/// <summary>
 		/// 2단계 탐색 버튼 클릭 시
 		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
+		/// <param name="sender">이벤트를 발생시킨 컨트롤</param>
+		/// <param name="e">이벤트 인자</param>
 		private void Check2ndRunButton_Click(object sender, EventArgs e)
 		{
 			isSecond = !isSecond;
@@ -844,8 +1121,8 @@
 		/// <summary>
 		/// 기록 버튼 클릭 시 isWrite 설정
 		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
+		/// <param name="sender">이벤트를 발생시킨 컨트롤</param>
+		/// <param name="e">이벤트 인자</param>
 		private void WriteButton_Click(object sender, EventArgs e)
 		{
 			isWrite = !isWrite;
@@ -862,12 +1139,12 @@
 					if (!File.Exists(csvDataFilePath))
 					{
 						using StreamWriter sw = new(csvDataFilePath, append: false);
-						sw.WriteLine("Size,StraightTimePenalty,RotationPenalty,Fork,DeadEnd,BFS,DFS,Astar");
+						sw.WriteLine("Size,StraightTimePenalty,RotationPenalty,Fork,DeadEnd,BranchDeg1,BranchDeg2,BranchDeg3,BranchDeg4,LongestStraightCorridor,DeadEndChainDepthAvg,DeadEndChainDepthMax,GoalDirectionOpenness,BFS,DFS,Astar");
 					}
 					if (!File.Exists(csv2ndDataFilePath))
 					{
 						using StreamWriter sw = new(csv2ndDataFilePath, append: false);
-						sw.WriteLine("Size,StraightTimePenalty,RotationPenalty,Fork,DeadEnd,BFS,DFS,Astar,BFS_2nd,DFS_2nd,Astar_2nd");
+						sw.WriteLine("Size,StraightTimePenalty,RotationPenalty,Fork,DeadEnd,BranchDeg1,BranchDeg2,BranchDeg3,BranchDeg4,LongestStraightCorridor,DeadEndChainDepthAvg,DeadEndChainDepthMax,GoalDirectionOpenness,BFS,DFS,Astar,BFS_2nd,DFS_2nd,Astar_2nd");
 					}
 				}
 				catch (Exception ex)
@@ -977,6 +1254,9 @@
 			Left
 		}
 
+		/// <summary>
+		/// 미로 셀을 초기화하고 기본 벽을 설정합니다.
+		/// </summary>
 		public MazeCell()
 		{
 			closedSides = [];
@@ -1078,11 +1358,11 @@
         public bool IsWallClosed(Closed closed) => closedSides.Contains(closed);
 
         /// <summary>
-        /// player 위치 색칠
+        /// 플레이어가 있는 영역을 지정된 색상으로 음영 처리합니다.
         /// </summary>
-        /// <param name="R"></param>
-        /// <param name="G"></param>
-        /// <param name="B"></param>
+        /// <param name="R">강조 색상의 빨강 채널 값</param>
+        /// <param name="G">강조 색상의 초록 채널 값</param>
+        /// <param name="B">강조 색상의 파랑 채널 값</param>
         public void PlayerOn(int R, int G, int B)
 		{
 			using (Graphics g = Graphics.FromImage(bitmap))
