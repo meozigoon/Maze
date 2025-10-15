@@ -424,7 +424,6 @@
         private GroupBox Run2ndGroupBox;
         private CheckBox DfsCheckBox;
         private GroupBox groupBox1;
-        private CheckBox checkBox4;
         private CheckBox BfsCheckBox;
         private CheckBox AstarCheckBox;
         private Label Astar2ndTimeLabel;

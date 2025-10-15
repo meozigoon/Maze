@@ -23,7 +23,7 @@ sys.modules["maze_model_module"] = maze_model
 spec.loader.exec_module(maze_model)
 
 FEATURE_COLUMNS = maze_model.FEATURE_COLUMNS
-TARGET_COLUMNS = tuple(getattr(maze_model, "TARGET_COLUMNS", ("BFS", "DFS", "Astar")))
+TARGET_COLUMNS = tuple(getattr(maze_model, "TARGET_COLUMNS", ("BFS_TimeSeconds", "DFS_TimeSeconds", "Astar_TimeSeconds")))
 MazeNet = maze_model.MazeNet
 NormalizationStats = maze_model.NormalizationStats
 predict_faster_algorithm = maze_model.predict_faster_algorithm
@@ -33,16 +33,33 @@ EXAMPLE_FEATURES: Dict[str, float] = {
     "Size": 10,
     "StraightTimePenalty": 100,
     "RotationPenalty": 150,
-    "Fork": 13,
-    "DeadEnd": 11,
-    "BranchDeg1": 11,
-    "BranchDeg2": 80,
-    "BranchDeg3": 9,
-    "BranchDeg4": 0,
-    "LongestStraightCorridor": 5,
-    "DeadEndChainDepthAvg": 4.55,
-    "DeadEndChainDepthMax": 20,
-    "GoalDirectionOpenness": 0.5,
+    "TotalCells": 100,
+    "DeadEndCount": 12,
+    "JunctionCount": 8,
+    "Degree0Count": 0,
+    "Degree1Count": 12,
+    "Degree2Count": 76,
+    "Degree3Count": 12,
+    "Degree4Count": 0,
+    "CorridorCellCount": 58,
+    "CornerCellCount": 18,
+    "CorridorSegmentCount": 14,
+    "AverageCorridorLength": 4.2,
+    "LongestStraightCorridor": 9,
+    "DeadEndChainDepthAvg": 3.8,
+    "DeadEndChainDepthMax": 12,
+    "DeadEndChainCount": 12,
+    "DeadEndChainTotal": 46,
+    "DeadEndRatio": 0.12,
+    "GoalDirectionOpenness": 0.47,
+    "GoalAlignedEdges": 198,
+    "TotalOpenEdges": 360,
+    "OpenEdgeDensity": 0.9,
+    "AverageBranchingFactor": 2.24,
+    "BranchingFactorStd": 0.72,
+    "ShortestPathLength": 24,
+    "ShortestPathTurns": 11,
+    "ReachableCellCount": 100,
 }
 
 
