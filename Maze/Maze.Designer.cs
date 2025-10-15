@@ -42,20 +42,19 @@
             RunLoopButton = new Button();
             LoopLimitNumericUpDown = new NumericUpDown();
             LoopCountLabel = new Label();
-            Check2ndRunButton = new Button();
-            Check2ndLabel = new Label();
             Dfs2ndTimeLabel = new Label();
             Bfs2ndTimeLabel = new Label();
             LoopGroupBox = new GroupBox();
             Run2ndGroupBox = new GroupBox();
+            Run2ndCheckBox = new CheckBox();
             Astar2ndTimeLabel = new Label();
-            WriteButton = new Button();
-            CheckWriteLabel = new Label();
             DfsCheckBox = new CheckBox();
             groupBox1 = new GroupBox();
             BfsCheckBox = new CheckBox();
             AstarCheckBox = new CheckBox();
             AstarTimeLabel = new Label();
+            VisualDisplayCheckBox = new CheckBox();
+            WriteCheckBox = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)SizeNumericUpDown).BeginInit();
             ((System.ComponentModel.ISupportInitialize)StraightTimePenaltyNumericUpDown).BeginInit();
             ((System.ComponentModel.ISupportInitialize)RotationPenaltyNumericUpDown).BeginInit();
@@ -216,26 +215,6 @@
             LoopCountLabel.TabIndex = 13;
             LoopCountLabel.Text = "횟수 = 0";
             // 
-            // Check2ndRunButton
-            // 
-            Check2ndRunButton.Location = new Point(8, 109);
-            Check2ndRunButton.Name = "Check2ndRunButton";
-            Check2ndRunButton.Size = new Size(87, 34);
-            Check2ndRunButton.TabIndex = 14;
-            Check2ndRunButton.Text = "2차 ON";
-            Check2ndRunButton.UseVisualStyleBackColor = true;
-            Check2ndRunButton.Click += Check2ndRunButton_Click;
-            // 
-            // Check2ndLabel
-            // 
-            Check2ndLabel.AutoSize = true;
-            Check2ndLabel.Location = new Point(8, 146);
-            Check2ndLabel.Margin = new Padding(2, 0, 2, 0);
-            Check2ndLabel.Name = "Check2ndLabel";
-            Check2ndLabel.Size = new Size(52, 25);
-            Check2ndLabel.TabIndex = 15;
-            Check2ndLabel.Text = "False";
-            // 
             // Dfs2ndTimeLabel
             // 
             Dfs2ndTimeLabel.AutoSize = true;
@@ -271,17 +250,26 @@
             // 
             // Run2ndGroupBox
             // 
+            Run2ndGroupBox.Controls.Add(Run2ndCheckBox);
             Run2ndGroupBox.Controls.Add(Astar2ndTimeLabel);
             Run2ndGroupBox.Controls.Add(Bfs2ndTimeLabel);
             Run2ndGroupBox.Controls.Add(Dfs2ndTimeLabel);
-            Run2ndGroupBox.Controls.Add(Check2ndRunButton);
-            Run2ndGroupBox.Controls.Add(Check2ndLabel);
             Run2ndGroupBox.Location = new Point(9, 366);
             Run2ndGroupBox.Name = "Run2ndGroupBox";
-            Run2ndGroupBox.Size = new Size(130, 179);
+            Run2ndGroupBox.Size = new Size(130, 142);
             Run2ndGroupBox.TabIndex = 20;
             Run2ndGroupBox.TabStop = false;
             Run2ndGroupBox.Text = "2nd";
+            // 
+            // Run2ndCheckBox
+            // 
+            Run2ndCheckBox.AutoSize = true;
+            Run2ndCheckBox.Location = new Point(8, 108);
+            Run2ndCheckBox.Name = "Run2ndCheckBox";
+            Run2ndCheckBox.Size = new Size(108, 29);
+            Run2ndCheckBox.TabIndex = 28;
+            Run2ndCheckBox.Text = "2차 탐색";
+            Run2ndCheckBox.UseVisualStyleBackColor = true;
             // 
             // Astar2ndTimeLabel
             // 
@@ -289,29 +277,9 @@
             Astar2ndTimeLabel.Location = new Point(8, 80);
             Astar2ndTimeLabel.Margin = new Padding(2, 0, 2, 0);
             Astar2ndTimeLabel.Name = "Astar2ndTimeLabel";
-            Astar2ndTimeLabel.Size = new Size(61, 25);
+            Astar2ndTimeLabel.Size = new Size(48, 25);
             Astar2ndTimeLabel.TabIndex = 18;
             Astar2ndTimeLabel.Text = "A* : ";
-            // 
-            // WriteButton
-            // 
-            WriteButton.Location = new Point(9, 39);
-            WriteButton.Name = "WriteButton";
-            WriteButton.Size = new Size(98, 34);
-            WriteButton.TabIndex = 21;
-            WriteButton.Text = "기록 ON";
-            WriteButton.UseVisualStyleBackColor = true;
-            WriteButton.Click += WriteButton_Click;
-            // 
-            // CheckWriteLabel
-            // 
-            CheckWriteLabel.AutoSize = true;
-            CheckWriteLabel.Location = new Point(112, 44);
-            CheckWriteLabel.Margin = new Padding(2, 0, 2, 0);
-            CheckWriteLabel.Name = "CheckWriteLabel";
-            CheckWriteLabel.Size = new Size(52, 25);
-            CheckWriteLabel.TabIndex = 22;
-            CheckWriteLabel.Text = "False";
             // 
             // DfsCheckBox
             // 
@@ -356,7 +324,7 @@
             AstarCheckBox.CheckState = CheckState.Checked;
             AstarCheckBox.Location = new Point(156, 43);
             AstarCheckBox.Name = "AstarCheckBox";
-            AstarCheckBox.Size = new Size(66, 29);
+            AstarCheckBox.Size = new Size(58, 29);
             AstarCheckBox.TabIndex = 24;
             AstarCheckBox.Text = "A*";
             AstarCheckBox.UseVisualStyleBackColor = true;
@@ -367,9 +335,32 @@
             AstarTimeLabel.Location = new Point(9, 149);
             AstarTimeLabel.Margin = new Padding(2, 0, 2, 0);
             AstarTimeLabel.Name = "AstarTimeLabel";
-            AstarTimeLabel.Size = new Size(61, 25);
+            AstarTimeLabel.Size = new Size(48, 25);
             AstarTimeLabel.TabIndex = 25;
             AstarTimeLabel.Text = "A* : ";
+            // 
+            // VisualDisplayCheckBox
+            // 
+            VisualDisplayCheckBox.AutoSize = true;
+            VisualDisplayCheckBox.Checked = true;
+            VisualDisplayCheckBox.CheckState = CheckState.Checked;
+            VisualDisplayCheckBox.Location = new Point(302, 52);
+            VisualDisplayCheckBox.Name = "VisualDisplayCheckBox";
+            VisualDisplayCheckBox.Size = new Size(148, 29);
+            VisualDisplayCheckBox.TabIndex = 26;
+            VisualDisplayCheckBox.Text = "Visual Display";
+            VisualDisplayCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // WriteCheckBox
+            // 
+            WriteCheckBox.AutoSize = true;
+            WriteCheckBox.Location = new Point(17, 52);
+            WriteCheckBox.Name = "WriteCheckBox";
+            WriteCheckBox.Size = new Size(146, 29);
+            WriteCheckBox.TabIndex = 27;
+            WriteCheckBox.Text = "Write on CSV";
+            WriteCheckBox.UseVisualStyleBackColor = true;
+            WriteCheckBox.CheckedChanged += WriteCheckBox_CheckedChanged;
             // 
             // Maze
             // 
@@ -377,10 +368,10 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.White;
             ClientSize = new Size(1200, 800);
+            Controls.Add(WriteCheckBox);
+            Controls.Add(VisualDisplayCheckBox);
             Controls.Add(AstarTimeLabel);
             Controls.Add(groupBox1);
-            Controls.Add(CheckWriteLabel);
-            Controls.Add(WriteButton);
             Controls.Add(Run2ndGroupBox);
             Controls.Add(LoopGroupBox);
             Controls.Add(StraightTimePenaltyNumericUpDown);
@@ -427,14 +418,10 @@
         private Button RunLoopButton;
         private NumericUpDown LoopLimitNumericUpDown;
         private Label LoopCountLabel;
-        private Button Check2ndRunButton;
-        private Label Check2ndLabel;
         private Label Dfs2ndTimeLabel;
         private Label Bfs2ndTimeLabel;
         private GroupBox LoopGroupBox;
         private GroupBox Run2ndGroupBox;
-        private Button WriteButton;
-        private Label CheckWriteLabel;
         private CheckBox DfsCheckBox;
         private GroupBox groupBox1;
         private CheckBox checkBox4;
@@ -442,5 +429,8 @@
         private CheckBox AstarCheckBox;
         private Label Astar2ndTimeLabel;
         private Label AstarTimeLabel;
+        private CheckBox VisualDisplayCheckBox;
+        private CheckBox WriteCheckBox;
+        private CheckBox Run2ndCheckBox;
     }
 }
