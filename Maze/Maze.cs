@@ -838,8 +838,8 @@ namespace Maze
             decimal deadEndChainAverageRounded = decimal.Round(deadEndChainAverage, 2, MidpointRounding.AwayFromZero);
             decimal goalDirectionOpenness = totalOpenEdges > 0 ? (decimal)goalAlignedEdges / totalOpenEdges : 0m;
 
-            List<decimal> rowData = new()
-            {
+            List<decimal> rowData =
+            [
                 (decimal)SizeNumericUpDown.Value,
                 (decimal)StraightTimePenaltyNumericUpDown.Value,
                 (decimal)RotationPenaltyNumericUpDown.Value,
@@ -856,7 +856,7 @@ namespace Maze
                 decimal.Parse(BfsTimeLabel.Text.Split(" ")[2]),
                 decimal.Parse(DfsTimeLabel.Text.Split(" ")[2]),
                 decimal.Parse(AstarTimeLabel.Text.Split(" ")[2])
-            };
+            ];
 
             if (Run2ndCheckBox.Checked)
             {
