@@ -1036,38 +1036,39 @@ namespace Maze
 
             List<string> rowValues = new(
                 StructuralMetricHeaders.Length
-                + AlgorithmMetricSuffixes.Length * (includeSecondRunMetrics ? PrimaryAlgorithmKeys.Length + SecondaryAlgorithmKeys.Length : PrimaryAlgorithmKeys.Length));
-
-            rowValues.Add(FormatInvariant((decimal)SizeNumericUpDown.Value));
-            rowValues.Add(FormatInvariant((decimal)StraightTimePenaltyNumericUpDown.Value));
-            rowValues.Add(FormatInvariant((decimal)RotationPenaltyNumericUpDown.Value));
-            rowValues.Add(FormatInvariant(totalCells));
-            rowValues.Add(FormatInvariant(deadEndCount));
-            rowValues.Add(FormatInvariant(junctionCount));
-            rowValues.Add(FormatInvariant(openDegreeCounts.Length > 0 ? openDegreeCounts[0] : 0));
-            rowValues.Add(FormatInvariant(openDegreeCounts.Length > 1 ? openDegreeCounts[1] : 0));
-            rowValues.Add(FormatInvariant(openDegreeCounts.Length > 2 ? openDegreeCounts[2] : 0));
-            rowValues.Add(FormatInvariant(openDegreeCounts.Length > 3 ? openDegreeCounts[3] : 0));
-            rowValues.Add(FormatInvariant(openDegreeCounts.Length > 4 ? openDegreeCounts[4] : 0));
-            rowValues.Add(FormatInvariant(corridorCellCount));
-            rowValues.Add(FormatInvariant(cornerCellCount));
-            rowValues.Add(FormatInvariant(corridorSegmentCount));
-            rowValues.Add(FormatInvariant(averageCorridorLength));
-            rowValues.Add(FormatInvariant(longestCorridor));
-            rowValues.Add(FormatInvariant(deadEndChainAverage));
-            rowValues.Add(FormatInvariant(deadEndChainMax));
-            rowValues.Add(FormatInvariant(deadEndChainCount));
-            rowValues.Add(FormatInvariant(deadEndChainSum));
-            rowValues.Add(FormatInvariant(deadEndRatio));
-            rowValues.Add(FormatInvariant(goalDirectionOpenness));
-            rowValues.Add(FormatInvariant(goalAlignedEdges));
-            rowValues.Add(FormatInvariant(totalOpenEdges));
-            rowValues.Add(FormatInvariant(openEdgeDensity));
-            rowValues.Add(FormatInvariant(averageBranchingFactor));
-            rowValues.Add(FormatInvariant(branchingStd));
-            rowValues.Add(FormatInvariant(shortestPathLength));
-            rowValues.Add(FormatInvariant(shortestPathTurns));
-            rowValues.Add(FormatInvariant(reachableCellCount));
+                + AlgorithmMetricSuffixes.Length * (includeSecondRunMetrics ? PrimaryAlgorithmKeys.Length + SecondaryAlgorithmKeys.Length : PrimaryAlgorithmKeys.Length))
+            {
+                FormatInvariant((decimal)SizeNumericUpDown.Value),
+                FormatInvariant((decimal)StraightTimePenaltyNumericUpDown.Value),
+                FormatInvariant((decimal)RotationPenaltyNumericUpDown.Value),
+                FormatInvariant(totalCells),
+                FormatInvariant(deadEndCount),
+                FormatInvariant(junctionCount),
+                FormatInvariant(openDegreeCounts.Length > 0 ? openDegreeCounts[0] : 0),
+                FormatInvariant(openDegreeCounts.Length > 1 ? openDegreeCounts[1] : 0),
+                FormatInvariant(openDegreeCounts.Length > 2 ? openDegreeCounts[2] : 0),
+                FormatInvariant(openDegreeCounts.Length > 3 ? openDegreeCounts[3] : 0),
+                FormatInvariant(openDegreeCounts.Length > 4 ? openDegreeCounts[4] : 0),
+                FormatInvariant(corridorCellCount),
+                FormatInvariant(cornerCellCount),
+                FormatInvariant(corridorSegmentCount),
+                FormatInvariant(averageCorridorLength),
+                FormatInvariant(longestCorridor),
+                FormatInvariant(deadEndChainAverage),
+                FormatInvariant(deadEndChainMax),
+                FormatInvariant(deadEndChainCount),
+                FormatInvariant(deadEndChainSum),
+                FormatInvariant(deadEndRatio),
+                FormatInvariant(goalDirectionOpenness),
+                FormatInvariant(goalAlignedEdges),
+                FormatInvariant(totalOpenEdges),
+                FormatInvariant(openEdgeDensity),
+                FormatInvariant(averageBranchingFactor),
+                FormatInvariant(branchingStd),
+                FormatInvariant(shortestPathLength),
+                FormatInvariant(shortestPathTurns),
+                FormatInvariant(reachableCellCount)
+            };
 
             foreach (string algorithmKey in PrimaryAlgorithmKeys)
             {
@@ -1110,7 +1111,7 @@ namespace Maze
 
 		private AlgorithmMetrics GetAlgorithmMetrics(string key)
 		{
-			if (!latestAlgorithmMetrics.TryGetValue(key, out AlgorithmMetrics metrics))
+			if (!latestAlgorithmMetrics.TryGetValue(key, out var metrics))
 			{
 				metrics = new AlgorithmMetrics(key);
 				latestAlgorithmMetrics[key] = metrics;
@@ -1122,7 +1123,7 @@ namespace Maze
 
 		private static string BuildCsvHeader(bool includeSecondRunMetrics)
 		{
-			List<string> headers = new(StructuralMetricHeaders);
+			List<string> headers = [.. StructuralMetricHeaders];
 
 			foreach (string algorithm in PrimaryAlgorithmKeys)
 			{
@@ -1148,7 +1149,7 @@ namespace Maze
 
 		private void AppendAlgorithmMetrics(List<string> rowValues, string algorithmKey)
 		{
-			if (!latestAlgorithmMetrics.TryGetValue(algorithmKey, out AlgorithmMetrics metrics))
+			if (!latestAlgorithmMetrics.TryGetValue(algorithmKey, out var metrics))
 			{
 				metrics = new AlgorithmMetrics(algorithmKey);
 				latestAlgorithmMetrics[algorithmKey] = metrics;
@@ -1169,7 +1170,7 @@ namespace Maze
 				return;
 			}
 
-			if (!latestAlgorithmMetrics.TryGetValue(key, out AlgorithmMetrics metrics))
+			if (!latestAlgorithmMetrics.TryGetValue(key, out var metrics))
 			{
 				metrics = new AlgorithmMetrics(key);
 				latestAlgorithmMetrics[key] = metrics;
@@ -1224,9 +1225,10 @@ namespace Maze
 			return path;
 		}
 
-		private static int CountTurns(IReadOnlyList<Point> path)
+		private static int CountTurns(System.Collections.Generic.List<Point> path)
 		{
-			if (path.Count < 3)
+            ArgumentNullException.ThrowIfNull(path);
+            if (path.Count < 3)
 			{
 				return 0;
 			}
