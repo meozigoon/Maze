@@ -29,9 +29,6 @@ namespace Maze
 			new(-1, 0), // Left
 		];
 
-		/// <summary>
-		/// 미로 시뮬레이터 폼을 초기화합니다.
-		/// </summary>
 		public Maze()
 		{
 			InitializeComponent();
@@ -648,29 +645,26 @@ namespace Maze
 			}
 			if (DfsCheckBox.Checked)
 			{
-				Player player = new(Color.Blue);
+				Player player = new(Color.Blue, "DFS");
 				List<Point> dfs = StartDFS(player, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value);
 				player = SimulateMovement(player, dfs, mazeCell);
 				player.Path.RemoveAt(0); // 시작 위치 제외
-				player.Name = "DFS";
 				players.Add(player);
 			}
 			if (BfsCheckBox.Checked)
 			{
-				Player player = new(Color.Red);
+				Player player = new(Color.Red, "BFS");
 				List<Point> bfs = StartBFS(player, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value);
 				player = SimulateMovement(player, bfs, mazeCell);
 				player.Path.RemoveAt(0); // 시작 위치 제외
-				player.Name = "BFS";
 				players.Add(player);
 			}
 			if (AstarCheckBox.Checked)
 			{
-				Player player = new(Color.Green);
+				Player player = new(Color.Green, "Astar");
 				List<Point> astar = StartAstar(player, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value);
 				player = SimulateMovement(player, astar, mazeCell);
 				player.Path.RemoveAt(0); // 시작 위치 제외
-				player.Name = "Astar";
 				players.Add(player);
 			}
 			GenerateMazeButton.Enabled = false;
@@ -680,29 +674,26 @@ namespace Maze
 			{
 				if (DfsCheckBox.Checked)
 				{
-					Player player = new(Color.Blue);
+					Player player = new(Color.Blue, "DFS2");
 					List<Point> dfs = Start2ndDFS(player, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, prevDfsVisited);
 					player = SimulateMovement(player, dfs, mazeCell);
 					player.Path.RemoveAt(0); // 시작 위치 제외
-					player.Name = "DFS2";
 					players.Add(player);
 				}
 				if (BfsCheckBox.Checked)
 				{
-					Player player = new(Color.Red);
+					Player player = new(Color.Red, "BFS2");
 					List<Point> bfs = Start2ndBFS(player, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, prevBfsVisited);
 					player = SimulateMovement(player, bfs, mazeCell);
 					player.Path.RemoveAt(0); // 시작 위치 제외
-					player.Name = "BFS2";
 					players.Add(player);
 				}
 				if (AstarCheckBox.Checked)
 				{
-					Player player = new(Color.Green);
+					Player player = new(Color.Green, "Astar2");
 					List<Point> astar = Start2ndAstar(player, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, prevAstarVisited);
 					player = SimulateMovement(player, astar, mazeCell);
 					player.Path.RemoveAt(0); // 시작 위치 제외
-					player.Name = "Astar2";
 					players.Add(player);
 				}
 			}
@@ -1157,13 +1148,14 @@ namespace Maze
 		}
 	}
 
-	/// <summary>
-	/// player 클래스
-	/// </summary>
-	/// <param name="color">player 색상</param>
-	class Player(Color color)
+    /// <summary>
+    /// player 클래스
+    /// </summary>
+    /// <param name="color">player 색상</param>
+    /// <param name="name">player 이름</param>
+    class Player(Color color, string name)
 	{
-		public string Name { get; set; } = "Player";
+		public string Name { get; set; } = name;
 		public Point Location { get; set; } = new Point(0, 0);
 		public Color Color { get; set; } = color;
 		public List<Point> Path { get; set; } = [];
@@ -1254,9 +1246,6 @@ namespace Maze
 			Left
 		}
 
-		/// <summary>
-		/// 미로 셀을 초기화하고 기본 벽을 설정합니다.
-		/// </summary>
 		public MazeCell()
 		{
 			closedSides = [];
