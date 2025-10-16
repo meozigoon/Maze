@@ -324,7 +324,7 @@
             FirstAlgorithmHeaderLabel.Name = "FirstAlgorithmHeaderLabel";
             FirstAlgorithmHeaderLabel.Size = new Size(114, 24);
             FirstAlgorithmHeaderLabel.TabIndex = 0;
-            FirstAlgorithmHeaderLabel.Text = "1차 알고리즘";
+            FirstAlgorithmHeaderLabel.Text = "1차알고리즘";
             FirstAlgorithmHeaderLabel.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // SecondBfsHeaderLabel
@@ -336,7 +336,7 @@
             SecondBfsHeaderLabel.Name = "SecondBfsHeaderLabel";
             SecondBfsHeaderLabel.Size = new Size(74, 24);
             SecondBfsHeaderLabel.TabIndex = 1;
-            SecondBfsHeaderLabel.Text = "2차 BFS";
+            SecondBfsHeaderLabel.Text = "2차BFS";
             SecondBfsHeaderLabel.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // SecondDfsHeaderLabel
@@ -348,7 +348,7 @@
             SecondDfsHeaderLabel.Name = "SecondDfsHeaderLabel";
             SecondDfsHeaderLabel.Size = new Size(74, 24);
             SecondDfsHeaderLabel.TabIndex = 2;
-            SecondDfsHeaderLabel.Text = "2차 DFS";
+            SecondDfsHeaderLabel.Text = "2차DFS";
             SecondDfsHeaderLabel.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // SecondAstarHeaderLabel

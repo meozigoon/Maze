@@ -803,6 +803,16 @@ namespace Maze
         /// <param name="e">이벤트 인자</param>
         private void RunButton_Click(object sender, EventArgs e)
         {
+            StraightTimePenaltyNumericUpDown.Enabled = false;
+            RotationPenaltyNumericUpDown.Enabled = false;
+            VisualDisplayCheckBox.Enabled = false;
+            DfsCheckBox.Enabled = false;
+            BfsCheckBox.Enabled = false;
+            AstarCheckBox.Enabled = false;
+            Run2ndCheckBox.Enabled = false;
+            SecondAlgorithmTableLayoutPanel.Enabled = false;
+            WriteCheckBox.Enabled = false;
+
             List<Player> players = [];
             Dictionary<string, (SearchAlgorithm first, SearchAlgorithm second)> secondPlayerKeys = new(StringComparer.Ordinal);
 
