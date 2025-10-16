@@ -1533,11 +1533,11 @@ namespace Maze
         public bool IsWallClosed(Closed closed) => closedSides.Contains(closed);
 
         /// <summary>
-        /// 플레이어가 있는 영역을 지정된 색상으로 음영 처리합니다.
+        /// player 위치 색칠
         /// </summary>
-        /// <param name="R">강조 색상의 빨강 채널 값</param>
-        /// <param name="G">강조 색상의 초록 채널 값</param>
-        /// <param name="B">강조 색상의 파랑 채널 값</param>
+        /// <param name="R">R</param>
+        /// <param name="G">G</param>
+        /// <param name="B">B</param>
         public void PlayerOn(int R, int G, int B)
 		{
 			using (Graphics g = Graphics.FromImage(bitmap))
