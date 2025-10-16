@@ -46,6 +46,23 @@
             Bfs2ndTimeLabel = new Label();
             LoopGroupBox = new GroupBox();
             Run2ndGroupBox = new GroupBox();
+            SecondAlgorithmTableLayoutPanel = new TableLayoutPanel();
+            FirstAlgorithmHeaderLabel = new Label();
+            SecondBfsHeaderLabel = new Label();
+            SecondDfsHeaderLabel = new Label();
+            SecondAstarHeaderLabel = new Label();
+            BfsFirstHeaderLabel = new Label();
+            DfsFirstHeaderLabel = new Label();
+            AstarFirstHeaderLabel = new Label();
+            BfsFirstBfsSecondCheckBox = new CheckBox();
+            BfsFirstDfsSecondCheckBox = new CheckBox();
+            BfsFirstAstarSecondCheckBox = new CheckBox();
+            DfsFirstBfsSecondCheckBox = new CheckBox();
+            DfsFirstDfsSecondCheckBox = new CheckBox();
+            DfsFirstAstarSecondCheckBox = new CheckBox();
+            AstarFirstBfsSecondCheckBox = new CheckBox();
+            AstarFirstDfsSecondCheckBox = new CheckBox();
+            AstarFirstAstarSecondCheckBox = new CheckBox();
             Run2ndCheckBox = new CheckBox();
             Astar2ndTimeLabel = new Label();
             DfsCheckBox = new CheckBox();
@@ -61,6 +78,7 @@
             ((System.ComponentModel.ISupportInitialize)LoopLimitNumericUpDown).BeginInit();
             LoopGroupBox.SuspendLayout();
             Run2ndGroupBox.SuspendLayout();
+            SecondAlgorithmTableLayoutPanel.SuspendLayout();
             AlgorithmsGroupBox.SuspendLayout();
             SuspendLayout();
             // 
@@ -218,7 +236,7 @@
             // Dfs2ndTimeLabel
             // 
             Dfs2ndTimeLabel.AutoSize = true;
-            Dfs2ndTimeLabel.Location = new Point(8, 52);
+            Dfs2ndTimeLabel.Location = new Point(8, 221);
             Dfs2ndTimeLabel.Margin = new Padding(2, 0, 2, 0);
             Dfs2ndTimeLabel.Name = "Dfs2ndTimeLabel";
             Dfs2ndTimeLabel.Size = new Size(60, 25);
@@ -228,7 +246,7 @@
             // Bfs2ndTimeLabel
             // 
             Bfs2ndTimeLabel.AutoSize = true;
-            Bfs2ndTimeLabel.Location = new Point(8, 27);
+            Bfs2ndTimeLabel.Location = new Point(8, 196);
             Bfs2ndTimeLabel.Margin = new Padding(2, 0, 2, 0);
             Bfs2ndTimeLabel.Name = "Bfs2ndTimeLabel";
             Bfs2ndTimeLabel.Size = new Size(58, 25);
@@ -250,21 +268,240 @@
             // 
             // Run2ndGroupBox
             // 
+            Run2ndGroupBox.Controls.Add(SecondAlgorithmTableLayoutPanel);
             Run2ndGroupBox.Controls.Add(Run2ndCheckBox);
             Run2ndGroupBox.Controls.Add(Astar2ndTimeLabel);
             Run2ndGroupBox.Controls.Add(Bfs2ndTimeLabel);
             Run2ndGroupBox.Controls.Add(Dfs2ndTimeLabel);
             Run2ndGroupBox.Location = new Point(9, 366);
             Run2ndGroupBox.Name = "Run2ndGroupBox";
-            Run2ndGroupBox.Size = new Size(130, 142);
+            Run2ndGroupBox.Size = new Size(380, 290);
             Run2ndGroupBox.TabIndex = 20;
             Run2ndGroupBox.TabStop = false;
             Run2ndGroupBox.Text = "2nd";
             // 
+            // SecondAlgorithmTableLayoutPanel
+            // 
+            SecondAlgorithmTableLayoutPanel.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            SecondAlgorithmTableLayoutPanel.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
+            SecondAlgorithmTableLayoutPanel.ColumnCount = 4;
+            SecondAlgorithmTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
+            SecondAlgorithmTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33333F));
+            SecondAlgorithmTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33333F));
+            SecondAlgorithmTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33333F));
+            SecondAlgorithmTableLayoutPanel.Controls.Add(FirstAlgorithmHeaderLabel, 0, 0);
+            SecondAlgorithmTableLayoutPanel.Controls.Add(SecondBfsHeaderLabel, 1, 0);
+            SecondAlgorithmTableLayoutPanel.Controls.Add(SecondDfsHeaderLabel, 2, 0);
+            SecondAlgorithmTableLayoutPanel.Controls.Add(SecondAstarHeaderLabel, 3, 0);
+            SecondAlgorithmTableLayoutPanel.Controls.Add(BfsFirstHeaderLabel, 0, 1);
+            SecondAlgorithmTableLayoutPanel.Controls.Add(DfsFirstHeaderLabel, 0, 2);
+            SecondAlgorithmTableLayoutPanel.Controls.Add(AstarFirstHeaderLabel, 0, 3);
+            SecondAlgorithmTableLayoutPanel.Controls.Add(BfsFirstBfsSecondCheckBox, 1, 1);
+            SecondAlgorithmTableLayoutPanel.Controls.Add(BfsFirstDfsSecondCheckBox, 2, 1);
+            SecondAlgorithmTableLayoutPanel.Controls.Add(BfsFirstAstarSecondCheckBox, 3, 1);
+            SecondAlgorithmTableLayoutPanel.Controls.Add(DfsFirstBfsSecondCheckBox, 1, 2);
+            SecondAlgorithmTableLayoutPanel.Controls.Add(DfsFirstDfsSecondCheckBox, 2, 2);
+            SecondAlgorithmTableLayoutPanel.Controls.Add(DfsFirstAstarSecondCheckBox, 3, 2);
+            SecondAlgorithmTableLayoutPanel.Controls.Add(AstarFirstBfsSecondCheckBox, 1, 3);
+            SecondAlgorithmTableLayoutPanel.Controls.Add(AstarFirstDfsSecondCheckBox, 2, 3);
+            SecondAlgorithmTableLayoutPanel.Controls.Add(AstarFirstAstarSecondCheckBox, 3, 3);
+            SecondAlgorithmTableLayoutPanel.Location = new Point(8, 66);
+            SecondAlgorithmTableLayoutPanel.Name = "SecondAlgorithmTableLayoutPanel";
+            SecondAlgorithmTableLayoutPanel.RowCount = 4;
+            SecondAlgorithmTableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            SecondAlgorithmTableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            SecondAlgorithmTableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            SecondAlgorithmTableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            SecondAlgorithmTableLayoutPanel.Size = new Size(366, 126);
+            SecondAlgorithmTableLayoutPanel.TabIndex = 29;
+            // 
+            // FirstAlgorithmHeaderLabel
+            // 
+            FirstAlgorithmHeaderLabel.AutoSize = true;
+            FirstAlgorithmHeaderLabel.Dock = DockStyle.Fill;
+            FirstAlgorithmHeaderLabel.Location = new Point(4, 4);
+            FirstAlgorithmHeaderLabel.Margin = new Padding(3);
+            FirstAlgorithmHeaderLabel.Name = "FirstAlgorithmHeaderLabel";
+            FirstAlgorithmHeaderLabel.Size = new Size(114, 24);
+            FirstAlgorithmHeaderLabel.TabIndex = 0;
+            FirstAlgorithmHeaderLabel.Text = "1차 알고리즘";
+            FirstAlgorithmHeaderLabel.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // SecondBfsHeaderLabel
+            // 
+            SecondBfsHeaderLabel.AutoSize = true;
+            SecondBfsHeaderLabel.Dock = DockStyle.Fill;
+            SecondBfsHeaderLabel.Location = new Point(125, 4);
+            SecondBfsHeaderLabel.Margin = new Padding(3);
+            SecondBfsHeaderLabel.Name = "SecondBfsHeaderLabel";
+            SecondBfsHeaderLabel.Size = new Size(74, 24);
+            SecondBfsHeaderLabel.TabIndex = 1;
+            SecondBfsHeaderLabel.Text = "2차 BFS";
+            SecondBfsHeaderLabel.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // SecondDfsHeaderLabel
+            // 
+            SecondDfsHeaderLabel.AutoSize = true;
+            SecondDfsHeaderLabel.Dock = DockStyle.Fill;
+            SecondDfsHeaderLabel.Location = new Point(206, 4);
+            SecondDfsHeaderLabel.Margin = new Padding(3);
+            SecondDfsHeaderLabel.Name = "SecondDfsHeaderLabel";
+            SecondDfsHeaderLabel.Size = new Size(74, 24);
+            SecondDfsHeaderLabel.TabIndex = 2;
+            SecondDfsHeaderLabel.Text = "2차 DFS";
+            SecondDfsHeaderLabel.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // SecondAstarHeaderLabel
+            // 
+            SecondAstarHeaderLabel.AutoSize = true;
+            SecondAstarHeaderLabel.Dock = DockStyle.Fill;
+            SecondAstarHeaderLabel.Location = new Point(287, 4);
+            SecondAstarHeaderLabel.Margin = new Padding(3);
+            SecondAstarHeaderLabel.Name = "SecondAstarHeaderLabel";
+            SecondAstarHeaderLabel.Size = new Size(75, 24);
+            SecondAstarHeaderLabel.TabIndex = 3;
+            SecondAstarHeaderLabel.Text = "2차 A*";
+            SecondAstarHeaderLabel.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // BfsFirstHeaderLabel
+            // 
+            BfsFirstHeaderLabel.AutoSize = true;
+            BfsFirstHeaderLabel.Dock = DockStyle.Fill;
+            BfsFirstHeaderLabel.Location = new Point(4, 35);
+            BfsFirstHeaderLabel.Margin = new Padding(3);
+            BfsFirstHeaderLabel.Name = "BfsFirstHeaderLabel";
+            BfsFirstHeaderLabel.Size = new Size(114, 24);
+            BfsFirstHeaderLabel.TabIndex = 4;
+            BfsFirstHeaderLabel.Text = "1차 BFS";
+            BfsFirstHeaderLabel.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // DfsFirstHeaderLabel
+            // 
+            DfsFirstHeaderLabel.AutoSize = true;
+            DfsFirstHeaderLabel.Dock = DockStyle.Fill;
+            DfsFirstHeaderLabel.Location = new Point(4, 66);
+            DfsFirstHeaderLabel.Margin = new Padding(3);
+            DfsFirstHeaderLabel.Name = "DfsFirstHeaderLabel";
+            DfsFirstHeaderLabel.Size = new Size(114, 24);
+            DfsFirstHeaderLabel.TabIndex = 5;
+            DfsFirstHeaderLabel.Text = "1차 DFS";
+            DfsFirstHeaderLabel.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // AstarFirstHeaderLabel
+            // 
+            AstarFirstHeaderLabel.AutoSize = true;
+            AstarFirstHeaderLabel.Dock = DockStyle.Fill;
+            AstarFirstHeaderLabel.Location = new Point(4, 97);
+            AstarFirstHeaderLabel.Margin = new Padding(3);
+            AstarFirstHeaderLabel.Name = "AstarFirstHeaderLabel";
+            AstarFirstHeaderLabel.Size = new Size(114, 25);
+            AstarFirstHeaderLabel.TabIndex = 6;
+            AstarFirstHeaderLabel.Text = "1차 A*";
+            AstarFirstHeaderLabel.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // BfsFirstBfsSecondCheckBox
+            // 
+            BfsFirstBfsSecondCheckBox.Anchor = AnchorStyles.None;
+            BfsFirstBfsSecondCheckBox.AutoSize = true;
+            BfsFirstBfsSecondCheckBox.Location = new Point(151, 36);
+            BfsFirstBfsSecondCheckBox.Margin = new Padding(4, 3, 4, 3);
+            BfsFirstBfsSecondCheckBox.Name = "BfsFirstBfsSecondCheckBox";
+            BfsFirstBfsSecondCheckBox.Size = new Size(22, 21);
+            BfsFirstBfsSecondCheckBox.TabIndex = 30;
+            BfsFirstBfsSecondCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // BfsFirstDfsSecondCheckBox
+            // 
+            BfsFirstDfsSecondCheckBox.Anchor = AnchorStyles.None;
+            BfsFirstDfsSecondCheckBox.AutoSize = true;
+            BfsFirstDfsSecondCheckBox.Location = new Point(232, 36);
+            BfsFirstDfsSecondCheckBox.Margin = new Padding(4, 3, 4, 3);
+            BfsFirstDfsSecondCheckBox.Name = "BfsFirstDfsSecondCheckBox";
+            BfsFirstDfsSecondCheckBox.Size = new Size(22, 21);
+            BfsFirstDfsSecondCheckBox.TabIndex = 31;
+            BfsFirstDfsSecondCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // BfsFirstAstarSecondCheckBox
+            // 
+            BfsFirstAstarSecondCheckBox.Anchor = AnchorStyles.None;
+            BfsFirstAstarSecondCheckBox.AutoSize = true;
+            BfsFirstAstarSecondCheckBox.Location = new Point(313, 36);
+            BfsFirstAstarSecondCheckBox.Margin = new Padding(4, 3, 4, 3);
+            BfsFirstAstarSecondCheckBox.Name = "BfsFirstAstarSecondCheckBox";
+            BfsFirstAstarSecondCheckBox.Size = new Size(22, 21);
+            BfsFirstAstarSecondCheckBox.TabIndex = 32;
+            BfsFirstAstarSecondCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // DfsFirstBfsSecondCheckBox
+            // 
+            DfsFirstBfsSecondCheckBox.Anchor = AnchorStyles.None;
+            DfsFirstBfsSecondCheckBox.AutoSize = true;
+            DfsFirstBfsSecondCheckBox.Location = new Point(151, 67);
+            DfsFirstBfsSecondCheckBox.Margin = new Padding(4, 3, 4, 3);
+            DfsFirstBfsSecondCheckBox.Name = "DfsFirstBfsSecondCheckBox";
+            DfsFirstBfsSecondCheckBox.Size = new Size(22, 21);
+            DfsFirstBfsSecondCheckBox.TabIndex = 33;
+            DfsFirstBfsSecondCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // DfsFirstDfsSecondCheckBox
+            // 
+            DfsFirstDfsSecondCheckBox.Anchor = AnchorStyles.None;
+            DfsFirstDfsSecondCheckBox.AutoSize = true;
+            DfsFirstDfsSecondCheckBox.Location = new Point(232, 67);
+            DfsFirstDfsSecondCheckBox.Margin = new Padding(4, 3, 4, 3);
+            DfsFirstDfsSecondCheckBox.Name = "DfsFirstDfsSecondCheckBox";
+            DfsFirstDfsSecondCheckBox.Size = new Size(22, 21);
+            DfsFirstDfsSecondCheckBox.TabIndex = 34;
+            DfsFirstDfsSecondCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // DfsFirstAstarSecondCheckBox
+            // 
+            DfsFirstAstarSecondCheckBox.Anchor = AnchorStyles.None;
+            DfsFirstAstarSecondCheckBox.AutoSize = true;
+            DfsFirstAstarSecondCheckBox.Location = new Point(313, 67);
+            DfsFirstAstarSecondCheckBox.Margin = new Padding(4, 3, 4, 3);
+            DfsFirstAstarSecondCheckBox.Name = "DfsFirstAstarSecondCheckBox";
+            DfsFirstAstarSecondCheckBox.Size = new Size(22, 21);
+            DfsFirstAstarSecondCheckBox.TabIndex = 35;
+            DfsFirstAstarSecondCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // AstarFirstBfsSecondCheckBox
+            // 
+            AstarFirstBfsSecondCheckBox.Anchor = AnchorStyles.None;
+            AstarFirstBfsSecondCheckBox.AutoSize = true;
+            AstarFirstBfsSecondCheckBox.Location = new Point(151, 99);
+            AstarFirstBfsSecondCheckBox.Margin = new Padding(4, 3, 4, 3);
+            AstarFirstBfsSecondCheckBox.Name = "AstarFirstBfsSecondCheckBox";
+            AstarFirstBfsSecondCheckBox.Size = new Size(22, 21);
+            AstarFirstBfsSecondCheckBox.TabIndex = 36;
+            AstarFirstBfsSecondCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // AstarFirstDfsSecondCheckBox
+            // 
+            AstarFirstDfsSecondCheckBox.Anchor = AnchorStyles.None;
+            AstarFirstDfsSecondCheckBox.AutoSize = true;
+            AstarFirstDfsSecondCheckBox.Location = new Point(232, 99);
+            AstarFirstDfsSecondCheckBox.Margin = new Padding(4, 3, 4, 3);
+            AstarFirstDfsSecondCheckBox.Name = "AstarFirstDfsSecondCheckBox";
+            AstarFirstDfsSecondCheckBox.Size = new Size(22, 21);
+            AstarFirstDfsSecondCheckBox.TabIndex = 37;
+            AstarFirstDfsSecondCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // AstarFirstAstarSecondCheckBox
+            // 
+            AstarFirstAstarSecondCheckBox.Anchor = AnchorStyles.None;
+            AstarFirstAstarSecondCheckBox.AutoSize = true;
+            AstarFirstAstarSecondCheckBox.Location = new Point(313, 99);
+            AstarFirstAstarSecondCheckBox.Margin = new Padding(4, 3, 4, 3);
+            AstarFirstAstarSecondCheckBox.Name = "AstarFirstAstarSecondCheckBox";
+            AstarFirstAstarSecondCheckBox.Size = new Size(22, 21);
+            AstarFirstAstarSecondCheckBox.TabIndex = 38;
+            AstarFirstAstarSecondCheckBox.UseVisualStyleBackColor = true;
+            // 
             // Run2ndCheckBox
             // 
             Run2ndCheckBox.AutoSize = true;
-            Run2ndCheckBox.Location = new Point(8, 108);
+            Run2ndCheckBox.Location = new Point(8, 30);
             Run2ndCheckBox.Name = "Run2ndCheckBox";
             Run2ndCheckBox.Size = new Size(108, 29);
             Run2ndCheckBox.TabIndex = 28;
@@ -274,7 +511,7 @@
             // Astar2ndTimeLabel
             // 
             Astar2ndTimeLabel.AutoSize = true;
-            Astar2ndTimeLabel.Location = new Point(8, 80);
+            Astar2ndTimeLabel.Location = new Point(8, 246);
             Astar2ndTimeLabel.Margin = new Padding(2, 0, 2, 0);
             Astar2ndTimeLabel.Name = "Astar2ndTimeLabel";
             Astar2ndTimeLabel.Size = new Size(48, 25);
@@ -396,6 +633,8 @@
             LoopGroupBox.PerformLayout();
             Run2ndGroupBox.ResumeLayout(false);
             Run2ndGroupBox.PerformLayout();
+            SecondAlgorithmTableLayoutPanel.ResumeLayout(false);
+            SecondAlgorithmTableLayoutPanel.PerformLayout();
             AlgorithmsGroupBox.ResumeLayout(false);
             AlgorithmsGroupBox.PerformLayout();
             ResumeLayout(false);
@@ -422,6 +661,7 @@
         private Label Bfs2ndTimeLabel;
         private GroupBox LoopGroupBox;
         private GroupBox Run2ndGroupBox;
+        private TableLayoutPanel SecondAlgorithmTableLayoutPanel;
         private CheckBox DfsCheckBox;
         private GroupBox AlgorithmsGroupBox;
         private CheckBox checkBox4;
@@ -432,5 +672,21 @@
         private CheckBox VisualDisplayCheckBox;
         private CheckBox WriteCheckBox;
         private CheckBox Run2ndCheckBox;
+        private CheckBox BfsFirstBfsSecondCheckBox;
+        private CheckBox BfsFirstDfsSecondCheckBox;
+        private CheckBox BfsFirstAstarSecondCheckBox;
+        private CheckBox DfsFirstBfsSecondCheckBox;
+        private CheckBox DfsFirstDfsSecondCheckBox;
+        private CheckBox DfsFirstAstarSecondCheckBox;
+        private CheckBox AstarFirstBfsSecondCheckBox;
+        private CheckBox AstarFirstDfsSecondCheckBox;
+        private CheckBox AstarFirstAstarSecondCheckBox;
+        private Label FirstAlgorithmHeaderLabel;
+        private Label SecondBfsHeaderLabel;
+        private Label SecondDfsHeaderLabel;
+        private Label SecondAstarHeaderLabel;
+        private Label BfsFirstHeaderLabel;
+        private Label DfsFirstHeaderLabel;
+        private Label AstarFirstHeaderLabel;
     }
 }

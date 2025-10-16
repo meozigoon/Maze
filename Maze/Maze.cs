@@ -19,6 +19,24 @@ namespace Maze
             Left = 3
         }
 
+        enum SearchAlgorithm
+        {
+            Bfs,
+            Dfs,
+            Astar
+        }
+
+        static readonly Dictionary<SearchAlgorithm, string> AlgorithmNames = new()
+        {
+            { SearchAlgorithm.Bfs, "BFS" },
+            { SearchAlgorithm.Dfs, "DFS" },
+            { SearchAlgorithm.Astar, "A*" }
+        };
+
+        readonly Dictionary<SearchAlgorithm, Dictionary<SearchAlgorithm, CheckBox>> secondAlgorithmSelectors = [];
+        readonly Dictionary<SearchAlgorithm, double> latestFirstTimes = [];
+        readonly Dictionary<SearchAlgorithm, (SearchAlgorithm second, double time)> latestSecondSummary = [];
+
         private static readonly Point[] directions =
         [
             new(0, -1), // Top
@@ -30,6 +48,122 @@ namespace Maze
         public Maze()
         {
             InitializeComponent();
+            InitializeSecondAlgorithmBindings();
+        }
+
+        void InitializeSecondAlgorithmBindings()
+        {
+            Run2ndCheckBox.CheckedChanged += Run2ndCheckBox_CheckedChanged;
+
+            secondAlgorithmSelectors.Clear();
+            secondAlgorithmSelectors[SearchAlgorithm.Bfs] = new()
+            {
+                { SearchAlgorithm.Bfs, BfsFirstBfsSecondCheckBox },
+                { SearchAlgorithm.Dfs, BfsFirstDfsSecondCheckBox },
+                { SearchAlgorithm.Astar, BfsFirstAstarSecondCheckBox }
+            };
+            secondAlgorithmSelectors[SearchAlgorithm.Dfs] = new()
+            {
+                { SearchAlgorithm.Bfs, DfsFirstBfsSecondCheckBox },
+                { SearchAlgorithm.Dfs, DfsFirstDfsSecondCheckBox },
+                { SearchAlgorithm.Astar, DfsFirstAstarSecondCheckBox }
+            };
+            secondAlgorithmSelectors[SearchAlgorithm.Astar] = new()
+            {
+                { SearchAlgorithm.Bfs, AstarFirstBfsSecondCheckBox },
+                { SearchAlgorithm.Dfs, AstarFirstDfsSecondCheckBox },
+                { SearchAlgorithm.Astar, AstarFirstAstarSecondCheckBox }
+            };
+
+            BfsFirstBfsSecondCheckBox.CheckedChanged += (s, e) => OnSecondSelectionChanged(SearchAlgorithm.Bfs, SearchAlgorithm.Bfs, BfsFirstBfsSecondCheckBox);
+            BfsFirstDfsSecondCheckBox.CheckedChanged += (s, e) => OnSecondSelectionChanged(SearchAlgorithm.Bfs, SearchAlgorithm.Dfs, BfsFirstDfsSecondCheckBox);
+            BfsFirstAstarSecondCheckBox.CheckedChanged += (s, e) => OnSecondSelectionChanged(SearchAlgorithm.Bfs, SearchAlgorithm.Astar, BfsFirstAstarSecondCheckBox);
+
+            DfsFirstBfsSecondCheckBox.CheckedChanged += (s, e) => OnSecondSelectionChanged(SearchAlgorithm.Dfs, SearchAlgorithm.Bfs, DfsFirstBfsSecondCheckBox);
+            DfsFirstDfsSecondCheckBox.CheckedChanged += (s, e) => OnSecondSelectionChanged(SearchAlgorithm.Dfs, SearchAlgorithm.Dfs, DfsFirstDfsSecondCheckBox);
+            DfsFirstAstarSecondCheckBox.CheckedChanged += (s, e) => OnSecondSelectionChanged(SearchAlgorithm.Dfs, SearchAlgorithm.Astar, DfsFirstAstarSecondCheckBox);
+
+            AstarFirstBfsSecondCheckBox.CheckedChanged += (s, e) => OnSecondSelectionChanged(SearchAlgorithm.Astar, SearchAlgorithm.Bfs, AstarFirstBfsSecondCheckBox);
+            AstarFirstDfsSecondCheckBox.CheckedChanged += (s, e) => OnSecondSelectionChanged(SearchAlgorithm.Astar, SearchAlgorithm.Dfs, AstarFirstDfsSecondCheckBox);
+            AstarFirstAstarSecondCheckBox.CheckedChanged += (s, e) => OnSecondSelectionChanged(SearchAlgorithm.Astar, SearchAlgorithm.Astar, AstarFirstAstarSecondCheckBox);
+
+            Run2ndCheckBox_CheckedChanged(this, EventArgs.Empty);
+        }
+
+        void Run2ndCheckBox_CheckedChanged(object? sender, EventArgs e)
+        {
+            SecondAlgorithmTableLayoutPanel.Enabled = Run2ndCheckBox.Checked;
+            if (!Run2ndCheckBox.Checked)
+            {
+                latestSecondSummary.Clear();
+                Bfs2ndTimeLabel.Text = "BFS : ";
+                Dfs2ndTimeLabel.Text = "DFS : ";
+                Astar2ndTimeLabel.Text = "A* : ";
+            }
+        }
+
+        void OnSecondSelectionChanged(SearchAlgorithm first, SearchAlgorithm current, CheckBox source)
+        {
+            if (!source.Checked)
+            {
+                return;
+            }
+
+            foreach (var selector in secondAlgorithmSelectors[first])
+            {
+                if (selector.Key == current)
+                {
+                    continue;
+                }
+                selector.Value.Checked = false;
+            }
+        }
+
+        private bool IsPrimaryAlgorithmChecked(SearchAlgorithm algorithm) => algorithm switch
+        {
+            SearchAlgorithm.Bfs => BfsCheckBox.Checked,
+            SearchAlgorithm.Dfs => DfsCheckBox.Checked,
+            SearchAlgorithm.Astar => AstarCheckBox.Checked,
+            _ => false
+        };
+
+        private SearchAlgorithm? GetSelectedSecondAlgorithm(SearchAlgorithm first)
+        {
+            foreach (var selector in secondAlgorithmSelectors[first])
+            {
+                if (selector.Value.Checked)
+                {
+                    return selector.Key;
+                }
+            }
+            return null;
+        }
+
+        private HashSet<Point> GetVisitedSet(SearchAlgorithm algorithm) => algorithm switch
+        {
+            SearchAlgorithm.Bfs => prevBfsVisited,
+            SearchAlgorithm.Dfs => prevDfsVisited,
+            SearchAlgorithm.Astar => prevAstarVisited,
+            _ => prevBfsVisited
+        };
+
+        private string FormatPrimaryLabel(SearchAlgorithm algorithm)
+        {
+            string prefix = AlgorithmNames[algorithm] + " : ";
+            return latestFirstTimes.TryGetValue(algorithm, out double seconds) ? prefix + seconds + " s" : prefix;
+        }
+
+        private string FormatSecondLabel(SearchAlgorithm first)
+        {
+            string prefix = AlgorithmNames[first] + " : ";
+            if (!Run2ndCheckBox.Checked)
+            {
+                return prefix;
+            }
+
+            return latestSecondSummary.TryGetValue(first, out var summary)
+                ? prefix + AlgorithmNames[summary.second] + " " + summary.time + " s"
+                : prefix;
         }
 
         /// <summary>
@@ -401,7 +535,7 @@ namespace Maze
         /// <param name="players">이동 개체 List</param>
         /// <param name="straightPenalty">직선 이동 delay</param>
         /// <param name="rotationPenalty">회전 이동 delay</param>
-        private void SimulateMove(List<Player> players, int straightPenalty, int rotationPenalty)
+        private void SimulateMove(List<Player> players, int straightPenalty, int rotationPenalty, Dictionary<string, (SearchAlgorithm first, SearchAlgorithm second)>? secondPlayerKeys = null)
         {
             Point?[] previousDirections = new Point?[players.Count];
             Dictionary<string, int> time = [];
@@ -458,22 +592,40 @@ namespace Maze
 
                 if (!isPlayerMoved)
                 {
-                    BfsTimeLabel.Text = "BFS : " + (BfsCheckBox.Checked ? (time["BFS"] / 1000.0 + " s") : " ");
-                    DfsTimeLabel.Text = "DFS : " + (DfsCheckBox.Checked ? (time["DFS"] / 1000.0 + " s") : " ");
-                    AstarTimeLabel.Text = "A* : " + (AstarCheckBox.Checked ? (time["Astar"] / 1000.0 + " s") : " ");
+                    latestFirstTimes.Clear();
+                    if (time.TryGetValue("BFS", out int bfsTime))
+                    {
+                        latestFirstTimes[SearchAlgorithm.Bfs] = bfsTime / 1000.0;
+                    }
+                    if (time.TryGetValue("DFS", out int dfsTime))
+                    {
+                        latestFirstTimes[SearchAlgorithm.Dfs] = dfsTime / 1000.0;
+                    }
+                    if (time.TryGetValue("Astar", out int astarTime))
+                    {
+                        latestFirstTimes[SearchAlgorithm.Astar] = astarTime / 1000.0;
+                    }
 
-                    if (Run2ndCheckBox.Checked)
+                    BfsTimeLabel.Text = FormatPrimaryLabel(SearchAlgorithm.Bfs);
+                    DfsTimeLabel.Text = FormatPrimaryLabel(SearchAlgorithm.Dfs);
+                    AstarTimeLabel.Text = FormatPrimaryLabel(SearchAlgorithm.Astar);
+
+                    latestSecondSummary.Clear();
+                    if (Run2ndCheckBox.Checked && secondPlayerKeys != null && secondPlayerKeys.Count > 0)
                     {
-                        Bfs2ndTimeLabel.Text = "BFS : " + time["BFS2"] / 1000.0 + " s";
-                        Dfs2ndTimeLabel.Text = "DFS : " + time["DFS2"] / 1000.0 + " s";
-                        Astar2ndTimeLabel.Text = "A* : " + (AstarCheckBox.Checked ? (time["Astar2"] / 1000.0 + " s") : " ");
+                        foreach (var entry in secondPlayerKeys)
+                        {
+                            if (!time.TryGetValue(entry.Key, out int value))
+                            {
+                                continue;
+                            }
+                            latestSecondSummary[entry.Value.first] = (entry.Value.second, value / 1000.0);
+                        }
                     }
-                    else
-                    {
-                        Bfs2ndTimeLabel.Text = "BFS : ";
-                        Dfs2ndTimeLabel.Text = "DFS : ";
-                        Astar2ndTimeLabel.Text = "A* : ";
-                    }
+
+                    Bfs2ndTimeLabel.Text = FormatSecondLabel(SearchAlgorithm.Bfs);
+                    Dfs2ndTimeLabel.Text = FormatSecondLabel(SearchAlgorithm.Dfs);
+                    Astar2ndTimeLabel.Text = FormatSecondLabel(SearchAlgorithm.Astar);
                     break; // 이동할 수 없을 때 종료
                 }
             }
@@ -652,6 +804,8 @@ namespace Maze
         private void RunButton_Click(object sender, EventArgs e)
         {
             List<Player> players = [];
+            Dictionary<string, (SearchAlgorithm first, SearchAlgorithm second)> secondPlayerKeys = new(StringComparer.Ordinal);
+
             if (!DfsCheckBox.Checked && !BfsCheckBox.Checked && !AstarCheckBox.Checked)
             {
                 MessageBox.Show("알고리즘을 선택해야 합니다.", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -686,32 +840,51 @@ namespace Maze
 
             if (Run2ndCheckBox.Checked)
             {
-                if (DfsCheckBox.Checked)
+                foreach (SearchAlgorithm firstAlgorithm in Enum.GetValues(typeof(SearchAlgorithm)))
                 {
-                    Player player = new(Color.Blue, "DFS2");
-                    List<Point> dfs = Start2ndDFS(player, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, prevDfsVisited);
-                    player = SimulateMovement(player, dfs, mazeCell);
-                    player.Path.RemoveAt(0); // 시작 위치 제외
-                    players.Add(player);
-                }
-                if (BfsCheckBox.Checked)
-                {
-                    Player player = new(Color.Red, "BFS2");
-                    List<Point> bfs = Start2ndBFS(player, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, prevBfsVisited);
-                    player = SimulateMovement(player, bfs, mazeCell);
-                    player.Path.RemoveAt(0); // 시작 위치 제외
-                    players.Add(player);
-                }
-                if (AstarCheckBox.Checked)
-                {
-                    Player player = new(Color.Green, "Astar2");
-                    List<Point> astar = Start2ndAstar(player, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, prevAstarVisited);
-                    player = SimulateMovement(player, astar, mazeCell);
-                    player.Path.RemoveAt(0); // 시작 위치 제외
-                    players.Add(player);
+                    if (!IsPrimaryAlgorithmChecked(firstAlgorithm))
+                    {
+                        continue;
+                    }
+
+                    SearchAlgorithm? secondSelection = GetSelectedSecondAlgorithm(firstAlgorithm);
+                    if (secondSelection is null)
+                    {
+                        continue;
+                    }
+
+                    HashSet<Point> visited = GetVisitedSet(firstAlgorithm);
+                    if (visited.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    Color color = secondSelection.Value switch
+                    {
+                        SearchAlgorithm.Bfs => Color.Red,
+                        SearchAlgorithm.Dfs => Color.Blue,
+                        SearchAlgorithm.Astar => Color.Green,
+                        _ => Color.Black
+                    };
+                    string playerName = $"2nd:{AlgorithmNames[firstAlgorithm]}->{AlgorithmNames[secondSelection.Value]}";
+                    Player secondPlayer = new(color, playerName);
+                    List<Point> move = secondSelection.Value switch
+                    {
+                        SearchAlgorithm.Bfs => Start2ndBFS(secondPlayer, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, visited),
+                        SearchAlgorithm.Dfs => Start2ndDFS(secondPlayer, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, visited),
+                        SearchAlgorithm.Astar => Start2ndAstar(secondPlayer, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, visited),
+                        _ => []
+                    };
+                    secondPlayer = SimulateMovement(secondPlayer, move, mazeCell);
+                    if (secondPlayer.Path.Count > 0)
+                    {
+                        secondPlayer.Path.RemoveAt(0); // 시작 위치 제외
+                    }
+                    players.Add(secondPlayer);
+                    secondPlayerKeys[playerName] = (firstAlgorithm, secondSelection.Value);
                 }
             }
-            SimulateMove(players, (int)StraightTimePenaltyNumericUpDown.Value, (int)RotationPenaltyNumericUpDown.Value);
+            SimulateMove(players, (int)StraightTimePenaltyNumericUpDown.Value, (int)RotationPenaltyNumericUpDown.Value, secondPlayerKeys.Count > 0 ? secondPlayerKeys : null);
 
             if (WriteCheckBox.Checked)
             {
@@ -838,6 +1011,10 @@ namespace Maze
             decimal deadEndChainAverageRounded = decimal.Round(deadEndChainAverage, 2, MidpointRounding.AwayFromZero);
             decimal goalDirectionOpenness = totalOpenEdges > 0 ? (decimal)goalAlignedEdges / totalOpenEdges : 0m;
 
+            latestFirstTimes.TryGetValue(SearchAlgorithm.Bfs, out double bfsSeconds);
+            latestFirstTimes.TryGetValue(SearchAlgorithm.Dfs, out double dfsSeconds);
+            latestFirstTimes.TryGetValue(SearchAlgorithm.Astar, out double astarSeconds);
+
             List<decimal> rowData =
             [
                 (decimal)SizeNumericUpDown.Value,
@@ -853,16 +1030,16 @@ namespace Maze
                 deadEndChainAverageRounded,
                 deadEndChainMax,
                 goalDirectionOpenness,
-                decimal.Parse(BfsTimeLabel.Text.Split(" ")[2]),
-                decimal.Parse(DfsTimeLabel.Text.Split(" ")[2]),
-                decimal.Parse(AstarTimeLabel.Text.Split(" ")[2])
+                Convert.ToDecimal(bfsSeconds),
+                Convert.ToDecimal(dfsSeconds),
+                Convert.ToDecimal(astarSeconds)
             ];
 
             if (Run2ndCheckBox.Checked)
             {
-                rowData.Add(decimal.Parse(Bfs2ndTimeLabel.Text.Split(" ")[2]));
-                rowData.Add(decimal.Parse(Dfs2ndTimeLabel.Text.Split(" ")[2]));
-                rowData.Add(decimal.Parse(Astar2ndTimeLabel.Text.Split(" ")[2]));
+                rowData.Add(latestSecondSummary.TryGetValue(SearchAlgorithm.Bfs, out var bfsSecond) ? Convert.ToDecimal(bfsSecond.time) : 0m);
+                rowData.Add(latestSecondSummary.TryGetValue(SearchAlgorithm.Dfs, out var dfsSecond) ? Convert.ToDecimal(dfsSecond.time) : 0m);
+                rowData.Add(latestSecondSummary.TryGetValue(SearchAlgorithm.Astar, out var astarSecond) ? Convert.ToDecimal(astarSecond.time) : 0m);
             }
 
             try
