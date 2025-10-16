@@ -49,7 +49,7 @@
             Run2ndCheckBox = new CheckBox();
             Astar2ndTimeLabel = new Label();
             DfsCheckBox = new CheckBox();
-            groupBox1 = new GroupBox();
+            AlgorithmsGroupBox = new GroupBox();
             BfsCheckBox = new CheckBox();
             AstarCheckBox = new CheckBox();
             AstarTimeLabel = new Label();
@@ -61,7 +61,7 @@
             ((System.ComponentModel.ISupportInitialize)LoopLimitNumericUpDown).BeginInit();
             LoopGroupBox.SuspendLayout();
             Run2ndGroupBox.SuspendLayout();
-            groupBox1.SuspendLayout();
+            AlgorithmsGroupBox.SuspendLayout();
             SuspendLayout();
             // 
             // SizeNumericUpDown
@@ -293,17 +293,17 @@
             DfsCheckBox.Text = "DFS";
             DfsCheckBox.UseVisualStyleBackColor = true;
             // 
-            // groupBox1
+            // AlgorithmsGroupBox
             // 
-            groupBox1.Controls.Add(BfsCheckBox);
-            groupBox1.Controls.Add(AstarCheckBox);
-            groupBox1.Controls.Add(DfsCheckBox);
-            groupBox1.Location = new Point(919, 5);
-            groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(269, 78);
-            groupBox1.TabIndex = 24;
-            groupBox1.TabStop = false;
-            groupBox1.Text = "Algorithms";
+            AlgorithmsGroupBox.Controls.Add(BfsCheckBox);
+            AlgorithmsGroupBox.Controls.Add(AstarCheckBox);
+            AlgorithmsGroupBox.Controls.Add(DfsCheckBox);
+            AlgorithmsGroupBox.Location = new Point(919, 5);
+            AlgorithmsGroupBox.Name = "AlgorithmsGroupBox";
+            AlgorithmsGroupBox.Size = new Size(269, 78);
+            AlgorithmsGroupBox.TabIndex = 24;
+            AlgorithmsGroupBox.TabStop = false;
+            AlgorithmsGroupBox.Text = "Algorithms";
             // 
             // BfsCheckBox
             // 
@@ -371,7 +371,7 @@
             Controls.Add(WriteCheckBox);
             Controls.Add(VisualDisplayCheckBox);
             Controls.Add(AstarTimeLabel);
-            Controls.Add(groupBox1);
+            Controls.Add(AlgorithmsGroupBox);
             Controls.Add(Run2ndGroupBox);
             Controls.Add(LoopGroupBox);
             Controls.Add(StraightTimePenaltyNumericUpDown);
@@ -396,8 +396,8 @@
             LoopGroupBox.PerformLayout();
             Run2ndGroupBox.ResumeLayout(false);
             Run2ndGroupBox.PerformLayout();
-            groupBox1.ResumeLayout(false);
-            groupBox1.PerformLayout();
+            AlgorithmsGroupBox.ResumeLayout(false);
+            AlgorithmsGroupBox.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -423,7 +423,7 @@
         private GroupBox LoopGroupBox;
         private GroupBox Run2ndGroupBox;
         private CheckBox DfsCheckBox;
-        private GroupBox groupBox1;
+        private GroupBox AlgorithmsGroupBox;
         private CheckBox checkBox4;
         private CheckBox BfsCheckBox;
         private CheckBox AstarCheckBox;
