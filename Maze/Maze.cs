@@ -1082,10 +1082,10 @@ namespace Maze
         }
 
         /// <summary>
-        /// 주어진 비트 마스크가 직선 복도 형태인지 판별합니다.
+        /// 비트 마스크의 직선 복도 형태 판별
         /// </summary>
-        /// <param name="mask">셀의 네 방향 개방 여부를 나타내는 비트 마스크</param>
-        /// <returns>직선 복도라면 true, 아니면 false</returns>
+        /// <param name="mask">비트 마스크</param>
+        /// <returns>직선 복도 true 아니면 false</returns>
         private static bool IsCorridorMask(int mask)
         {
             bool top = (mask & (1 << 0)) != 0;
@@ -1097,11 +1097,11 @@ namespace Maze
         }
 
         /// <summary>
-        /// 직선 복도 마스크가 가리키는 두 방향 인덱스를 반환합니다.
+        /// 직선 복도 마스크가 가리키는 두 방향 인덱스 반환
         /// </summary>
-        /// <param name="mask">현재 셀의 개방 방향을 나타내는 비트 마스크</param>
-        /// <param name="dirA">첫 번째 개방 방향 인덱스</param>
-        /// <param name="dirB">두 번째 개방 방향 인덱스</param>
+        /// <param name="mask">비트 마스크</param>
+        /// <param name="dirA">1 개방 방향 인덱스</param>
+        /// <param name="dirB">2 개방 방향 인덱스</param>
         private static void GetCorridorDirections(int mask, out int dirA, out int dirB)
         {
             if ((mask & (1 << 0)) != 0)
@@ -1117,14 +1117,14 @@ namespace Maze
         }
 
         /// <summary>
-        /// 특정 방향으로 이어지는 직선 복도의 길이를 계산합니다.
+        /// 특정 방향 직선 길이 계산
         /// </summary>
         /// <param name="startX">시작 X 좌표</param>
         /// <param name="startY">시작 Y 좌표</param>
         /// <param name="direction">이동할 방향 인덱스</param>
-        /// <param name="openMask">셀별 개방 상태 비트 마스크 배열</param>
-        /// <param name="width">미로 너비</param>
-        /// <param name="height">미로 높이</param>
+        /// <param name="openMask">비트 마스크</param>
+        /// <param name="width">너비</param>
+        /// <param name="height">높이</param>
         /// <returns>연속된 복도 셀 수</returns>
         private static int CountCorridorCellsInDirection(int startX, int startY, int direction, int[,] openMask, int width, int height)
         {
@@ -1167,13 +1167,13 @@ namespace Maze
         }
 
         /// <summary>
-        /// 막다른 셀에서 갈림길을 만날 때까지의 체인 깊이를 계산합니다.
+        /// 막다른 셀에서 갈림길 만날 때까지 체인 깊이 계산
         /// </summary>
         /// <param name="startX">시작 X 좌표</param>
         /// <param name="startY">시작 Y 좌표</param>
-        /// <param name="openMask">셀별 개방 상태 비트 마스크 배열</param>
-        /// <param name="width">미로 너비</param>
-        /// <param name="height">미로 높이</param>
+        /// <param name="openMask">비트 마스크</param>
+        /// <param name="width">너비</param>
+        /// <param name="height">높이</param>
         /// <returns>막다른길 체인 길이</returns>
         private static int ComputeDeadEndChainDepth(int startX, int startY, int[,] openMask, int width, int height)
         {
