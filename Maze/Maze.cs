@@ -980,7 +980,6 @@ namespace Maze
 
             int longestCorridor = 0;
             int deadEndChainSum = 0;
-            int deadEndChainMax = 0;
             int deadEndChainCount = 0;
 
             for (int x = 0; x < width; x++)
@@ -994,10 +993,6 @@ namespace Maze
                     {
                         int depth = ComputeDeadEndChainDepth(x, y, openMask, width, height);
                         deadEndChainSum += depth;
-                        if (depth > deadEndChainMax)
-                        {
-                            deadEndChainMax = depth;
-                        }
                         deadEndChainCount++;
                     }
 
@@ -1038,7 +1033,6 @@ namespace Maze
                 openDegreeCounts.Length > 4 ? openDegreeCounts[4] : 0,
                 longestCorridor,
                 deadEndChainAverageRounded,
-                deadEndChainMax,
                 goalDirectionOpenness,
                 Convert.ToDecimal(bfsSeconds),
                 Convert.ToDecimal(dfsSeconds),
