@@ -12,7 +12,8 @@ visited nodes, path length, and path turns.
 from __future__ import annotations
 
 import argparse
-import importlib.util
+import itertools
+import re
 from pathlib import Path
 from typing import Iterable, List, Sequence, Tuple
 
@@ -25,44 +26,31 @@ import pandas as pd  # noqa: E402
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-MODEL_FILE = SCRIPT_DIR.parent.parent / "model.py"
 DEFAULT_DATASET = SCRIPT_DIR.parent / "maze_data.csv"
 DEFAULT_OUTPUT_DIR = SCRIPT_DIR / "plots"
-ALGORITHMS: Tuple[str, ...] = ("BFS", "DFS", "Astar")
-ALGORITHM_METRIC_SUMMARIES: Tuple[Tuple[str, str, str], ...] = (
-    ("VisitedNodes", "Visited nodes by algorithm", "Visited nodes (count)"),
-    ("PathLength", "Path length by algorithm", "Path length (cells)"),
-    ("PathTurns", "Path turns by algorithm", "Path turns (count)"),
+DEFAULT_COLOR_CYCLE: Tuple[str, ...] = (
+    "#2ca02c",
+    "#ff7f0e",
+    "#1f77b4",
+    "#d62728",
+    "#9467bd",
+    "#8c564b",
+    "#e377c2",
+    "#7f7f7f",
+    "#bcbd22",
+    "#17becf",
 )
-ALGORITHM_COLORS: Tuple[str, ...] = ("#1f77b4", "#ff7f0e", "#2ca02c")
-ALGORITHM_DISTRIBUTION_SUFFIXES: Tuple[Tuple[str, str], ...] = (
-    ("TimeSeconds", "Time (seconds)"),
-    ("VisitedNodes", "Visited nodes"),
-    ("ExpandedNodes", "Expanded nodes"),
-)
-METRIC_COLORS: Tuple[str, ...] = ("#1f77b4", "#ff7f0e", "#2ca02c")
+SUFFIX_METADATA = {
+    "TimeSeconds": ("Algorithm time distribution", "Time (seconds)"),
+    "VisitedNodes": ("Visited nodes by algorithm", "Visited nodes (count)"),
+    "ExpandedNodes": ("Expanded nodes by algorithm", "Expanded nodes (count)"),
+    "PathLength": ("Path length by algorithm", "Path length (cells)"),
+    "PathTurns": ("Path turns by algorithm", "Path turns (count)"),
+    "PathCost": ("Path cost by algorithm", "Path cost"),
+}
 
 
-def load_model_columns() -> tuple[List[str], List[str]]:
-    """Load feature and target column names from model.py."""
-    if not MODEL_FILE.exists():
-        raise FileNotFoundError(f"Unable to locate model.py at {MODEL_FILE}")
-
-    spec = importlib.util.spec_from_file_location("maze_model_for_viz", MODEL_FILE)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"Unable to create import spec for {MODEL_FILE}")
-
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)  # type: ignore[call-arg]
-
-    features = list(getattr(module, "FEATURE_COLUMNS", []))
-    targets = list(getattr(module, "TARGET_COLUMNS", ["BFS_TimeSeconds", "DFS_TimeSeconds", "Astar_TimeSeconds"]))
-    if not features:
-        raise AttributeError("FEATURE_COLUMNS could not be loaded from model.py")
-    return features, targets
-
-
-def parse_args(feature_columns: Sequence[str]) -> argparse.Namespace:
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate time-comparison plots for maze metrics.")
     parser.add_argument(
         "--csv",
@@ -79,7 +67,7 @@ def parse_args(feature_columns: Sequence[str]) -> argparse.Namespace:
     parser.add_argument(
         "--metrics",
         nargs="*",
-        help="Optional subset of metric column names to visualise; defaults to all feature columns.",
+        help="Optional subset of metric column names to visualise; defaults to all non-algorithm columns.",
     )
     parser.add_argument(
         "--rolling-window",
@@ -97,8 +85,77 @@ def ensure_columns(frame: pd.DataFrame, columns: Iterable[str], kind: str) -> Li
     return list(columns)
 
 
-def algorithm_metric_columns(suffix: str) -> List[str]:
-    return [f"{algorithm}_{suffix}" for algorithm in ALGORITHMS]
+def select_colors(count: int) -> List[str]:
+    if count <= len(DEFAULT_COLOR_CYCLE):
+        return list(DEFAULT_COLOR_CYCLE[:count])
+    return list(itertools.islice(itertools.cycle(DEFAULT_COLOR_CYCLE), count))
+
+
+def detect_algorithms(frame: pd.DataFrame) -> List[str]:
+    candidates = {
+        column.split("_", 1)[0]
+        for column in frame.columns
+        if "_" in column and column.endswith("TimeSeconds")
+    }
+    algorithms = sorted(candidates)
+    if not algorithms:
+        raise ValueError("Dataset must include at least one *_TimeSeconds column to identify algorithms.")
+    return algorithms
+
+
+def infer_metric_columns(frame: pd.DataFrame, algorithms: Sequence[str], time_columns: Sequence[str]) -> List[str]:
+    algorithm_prefixes = tuple(f"{algorithm}_" for algorithm in algorithms)
+    metric_columns = [
+        column
+        for column in frame.columns
+        if column not in time_columns and not column.startswith(algorithm_prefixes)
+    ]
+    return metric_columns
+
+
+def shared_algorithm_suffixes(frame: pd.DataFrame, algorithms: Sequence[str]) -> List[str]:
+    suffix_sets = []
+    for algorithm in algorithms:
+        suffixes = {
+            column.split("_", 1)[1] for column in frame.columns if column.startswith(f"{algorithm}_")
+        }
+        if suffixes:
+            suffix_sets.append(suffixes)
+    if not suffix_sets or len(suffix_sets) != len(algorithms):
+        return []
+    shared = set.intersection(*suffix_sets)
+    return order_suffixes(shared)
+
+
+def order_suffixes(suffixes: Iterable[str]) -> List[str]:
+    priority = ("TimeSeconds", "VisitedNodes", "ExpandedNodes", "PathLength", "PathTurns", "PathCost")
+    suffix_list = list(suffixes)
+    ordered = [suffix for suffix in priority if suffix in suffix_list]
+    remaining = sorted(suffix for suffix in suffix_list if suffix not in priority)
+    return ordered + remaining
+
+
+def humanize_token(name: str) -> str:
+    cleaned = name.replace("_", " ").strip()
+    spaced = re.sub(r"(?<!^)(?=[A-Z])", " ", cleaned)
+    return spaced.strip().title()
+
+
+def suffix_plot_metadata(suffix: str) -> Tuple[str, str]:
+    if suffix in SUFFIX_METADATA:
+        return SUFFIX_METADATA[suffix]
+    friendly = humanize_token(suffix)
+    return (f"{friendly} by algorithm", friendly)
+
+
+def suffix_legend_label(suffix: str) -> str:
+    if suffix in SUFFIX_METADATA:
+        return SUFFIX_METADATA[suffix][1]
+    return humanize_token(suffix)
+
+
+def algorithm_metric_columns(algorithms: Sequence[str], suffix: str) -> List[str]:
+    return [f"{algorithm}_{suffix}" for algorithm in algorithms]
 
 
 def is_discrete(series: pd.Series) -> bool:
@@ -136,13 +193,18 @@ def plot_continuous(ax: plt.Axes, frame: pd.DataFrame, metric: str, time_columns
         ax.plot(sorted_frame[metric], trend, linewidth=1.6, label=friendly_label(column))
 
 
-def generate_algorithm_metric_plots(frame: pd.DataFrame, output_dir: Path) -> None:
-    for suffix, title, ylabel in ALGORITHM_METRIC_SUMMARIES:
-        metric_columns = algorithm_metric_columns(suffix)
-        try:
-            ensure_columns(frame, metric_columns, "algorithm metric")
-        except ValueError as exc:
-            print(f"[!] Skipping {suffix}: {exc}")
+def generate_algorithm_metric_plots(
+    frame: pd.DataFrame,
+    algorithms: Sequence[str],
+    colors: Sequence[str],
+    suffixes: Sequence[str],
+    output_dir: Path,
+) -> None:
+    for suffix in suffixes:
+        metric_columns = algorithm_metric_columns(algorithms, suffix)
+        missing = [column for column in metric_columns if column not in frame.columns]
+        if missing:
+            print(f"[!] Skipping {suffix}: missing columns {missing}")
             continue
 
         distributions = [frame[column].dropna().to_numpy() for column in metric_columns]
@@ -150,8 +212,9 @@ def generate_algorithm_metric_plots(frame: pd.DataFrame, output_dir: Path) -> No
             print(f"[!] Skipping {suffix}: no data available after dropping NaN values.")
             continue
 
+        title, ylabel = suffix_plot_metadata(suffix)
         fig, ax = plt.subplots(figsize=(8, 5))
-        for algorithm, values, color in zip(ALGORITHMS, distributions, ALGORITHM_COLORS):
+        for algorithm, values, color in zip(algorithms, distributions, colors):
             if len(values) == 0:
                 continue
             sorted_values = np.sort(values)
@@ -182,11 +245,19 @@ def generate_algorithm_metric_plots(frame: pd.DataFrame, output_dir: Path) -> No
         print(f"[+] Saved algorithm metric plot: {output_file}")
 
 
-def generate_individual_algorithm_plots(frame: pd.DataFrame, output_dir: Path) -> None:
-    for algorithm in ALGORITHMS:
+def generate_individual_algorithm_plots(
+    frame: pd.DataFrame,
+    algorithms: Sequence[str],
+    suffixes: Sequence[str],
+    output_dir: Path,
+) -> None:
+    if not suffixes:
+        return
+    metric_colors = select_colors(len(suffixes))
+    for algorithm in algorithms:
         fig, ax = plt.subplots(figsize=(8, 5))
         plotted = False
-        for (suffix_name, pretty_label), metric_color in zip(ALGORITHM_DISTRIBUTION_SUFFIXES, METRIC_COLORS):
+        for suffix_name, metric_color in zip(suffixes, metric_colors):
             column = f"{algorithm}_{suffix_name}"
             if column not in frame.columns:
                 print(f"[!] Skipping missing column for {algorithm}: {column}")
@@ -202,7 +273,7 @@ def generate_individual_algorithm_plots(frame: pd.DataFrame, output_dir: Path) -
                 sorted_values,
                 linewidth=1.8,
                 color=metric_color,
-                label=pretty_label,
+                label=suffix_legend_label(suffix_name),
             )
             plotted = True
 
@@ -225,16 +296,18 @@ def generate_individual_algorithm_plots(frame: pd.DataFrame, output_dir: Path) -
 
 
 def main() -> None:
-    feature_columns, target_columns = load_model_columns()
-    args = parse_args(feature_columns)
+    args = parse_args()
 
     dataset_path: Path = args.csv
     if not dataset_path.exists():
         raise FileNotFoundError(f"Dataset not found at {dataset_path}")
 
     df = pd.read_csv(dataset_path)
-    metrics_to_plot = feature_columns if not args.metrics else args.metrics
-    time_columns = ensure_columns(df, target_columns, "target")
+    algorithms = detect_algorithms(df)
+    time_columns = ensure_columns(df, [f"{algorithm}_TimeSeconds" for algorithm in algorithms], "time")
+    metrics_to_plot = args.metrics if args.metrics else infer_metric_columns(df, algorithms, time_columns)
+    suffixes = shared_algorithm_suffixes(df, algorithms)
+    algorithm_colors = select_colors(len(algorithms))
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -267,8 +340,8 @@ def main() -> None:
         plt.close(fig)
         print(f"[+] Saved plot: {output_file}")
 
-    generate_algorithm_metric_plots(df, args.output_dir)
-    generate_individual_algorithm_plots(df, args.output_dir)
+    generate_algorithm_metric_plots(df, algorithms, algorithm_colors, suffixes, args.output_dir)
+    generate_individual_algorithm_plots(df, algorithms, suffixes, args.output_dir)
 
 
 if __name__ == "__main__":

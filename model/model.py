@@ -10,10 +10,11 @@ from torch import nn
 from torch.utils.data import DataLoader, TensorDataset, WeightedRandomSampler
 
 
+PENALTY_COLUMNS = ["StraightTimePenalty", "RotationPenalty"]
+
 FEATURE_COLUMNS = [
     "Size",
-    "StraightTimePenalty",
-    "RotationPenalty",
+    *PENALTY_COLUMNS,
     "TotalCells",
     "DeadEndCount",
     "JunctionCount",
