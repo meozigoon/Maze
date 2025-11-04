@@ -12,18 +12,15 @@ from torch.utils.data import DataLoader, TensorDataset, WeightedRandomSampler
 
 FEATURE_COLUMNS = [
     "Size",
-    "StraightTimePenalty",
-    "RotationPenalty",
-    "Fork",
-    "DeadEnd",
-    "BranchDeg1",
-    "BranchDeg2",
-    "BranchDeg3",
-    "BranchDeg4",
-    "LongestStraightCorridor",
+    "TimePenaltyRatio",
+    "AverageCorridorLength",
+    "BranchingFactorStd",
+    "CornerCellCount",
+    "CorridorCellCount",
+    "DeadEndChainCount",
     "DeadEndChainDepthAvg",
-    "DeadEndChainDepthMax",
-    "GoalDirectionOpenness",
+    "ShortestPathLength",
+    "ShortestPathTurns",
 ]
 TARGET_COLUMNS = ["BFS", "DFS", "Astar"]
 

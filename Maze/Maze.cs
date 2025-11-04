@@ -19,24 +19,6 @@ namespace Maze
             Left = 3
         }
 
-        enum SearchAlgorithm
-        {
-            Bfs,
-            Dfs,
-            Astar
-        }
-
-        static readonly Dictionary<SearchAlgorithm, string> AlgorithmNames = new()
-        {
-            { SearchAlgorithm.Bfs, "BFS" },
-            { SearchAlgorithm.Dfs, "DFS" },
-            { SearchAlgorithm.Astar, "A*" }
-        };
-
-        readonly Dictionary<SearchAlgorithm, Dictionary<SearchAlgorithm, CheckBox>> secondAlgorithmSelectors = [];
-        readonly Dictionary<SearchAlgorithm, double> latestFirstTimes = [];
-        readonly Dictionary<SearchAlgorithm, (SearchAlgorithm second, double time)> latestSecondSummary = [];
-
         private static readonly Point[] directions =
         [
             new(0, -1), // Top
@@ -45,125 +27,27 @@ namespace Maze
 			new(-1, 0), // Left
 		];
 
+        readonly Dictionary<string, AlgorithmMetrics> latestAlgorithmMetrics = new(StringComparer.OrdinalIgnoreCase);
+
+        static readonly string[] PrimaryAlgorithmKeys = ["BFS", "DFS", "Astar"];
+        static readonly string[] SecondaryAlgorithmKeys = ["BFS2", "DFS2", "Astar2"];
+        static readonly string[] StructuralMetricHeaders =
+        [
+            "Size",
+            "TimePenaltyRatio",
+            "AverageCorridorLength",
+            "BranchingFactorStd",
+            "CornerCellCount",
+            "CorridorCellCount",
+            "DeadEndChainCount",
+            "DeadEndChainDepthAvg",
+            "ShortestPathLength",
+            "ShortestPathTurns"
+        ];
+
         public Maze()
         {
             InitializeComponent();
-            InitializeSecondAlgorithmBindings();
-        }
-
-        void InitializeSecondAlgorithmBindings()
-        {
-            Run2ndCheckBox.CheckedChanged += Run2ndCheckBox_CheckedChanged;
-
-            secondAlgorithmSelectors.Clear();
-            secondAlgorithmSelectors[SearchAlgorithm.Bfs] = new()
-            {
-                { SearchAlgorithm.Bfs, BfsFirstBfsSecondCheckBox },
-                { SearchAlgorithm.Dfs, BfsFirstDfsSecondCheckBox },
-                { SearchAlgorithm.Astar, BfsFirstAstarSecondCheckBox }
-            };
-            secondAlgorithmSelectors[SearchAlgorithm.Dfs] = new()
-            {
-                { SearchAlgorithm.Bfs, DfsFirstBfsSecondCheckBox },
-                { SearchAlgorithm.Dfs, DfsFirstDfsSecondCheckBox },
-                { SearchAlgorithm.Astar, DfsFirstAstarSecondCheckBox }
-            };
-            secondAlgorithmSelectors[SearchAlgorithm.Astar] = new()
-            {
-                { SearchAlgorithm.Bfs, AstarFirstBfsSecondCheckBox },
-                { SearchAlgorithm.Dfs, AstarFirstDfsSecondCheckBox },
-                { SearchAlgorithm.Astar, AstarFirstAstarSecondCheckBox }
-            };
-
-            BfsFirstBfsSecondCheckBox.CheckedChanged += (s, e) => OnSecondSelectionChanged(SearchAlgorithm.Bfs, SearchAlgorithm.Bfs, BfsFirstBfsSecondCheckBox);
-            BfsFirstDfsSecondCheckBox.CheckedChanged += (s, e) => OnSecondSelectionChanged(SearchAlgorithm.Bfs, SearchAlgorithm.Dfs, BfsFirstDfsSecondCheckBox);
-            BfsFirstAstarSecondCheckBox.CheckedChanged += (s, e) => OnSecondSelectionChanged(SearchAlgorithm.Bfs, SearchAlgorithm.Astar, BfsFirstAstarSecondCheckBox);
-
-            DfsFirstBfsSecondCheckBox.CheckedChanged += (s, e) => OnSecondSelectionChanged(SearchAlgorithm.Dfs, SearchAlgorithm.Bfs, DfsFirstBfsSecondCheckBox);
-            DfsFirstDfsSecondCheckBox.CheckedChanged += (s, e) => OnSecondSelectionChanged(SearchAlgorithm.Dfs, SearchAlgorithm.Dfs, DfsFirstDfsSecondCheckBox);
-            DfsFirstAstarSecondCheckBox.CheckedChanged += (s, e) => OnSecondSelectionChanged(SearchAlgorithm.Dfs, SearchAlgorithm.Astar, DfsFirstAstarSecondCheckBox);
-
-            AstarFirstBfsSecondCheckBox.CheckedChanged += (s, e) => OnSecondSelectionChanged(SearchAlgorithm.Astar, SearchAlgorithm.Bfs, AstarFirstBfsSecondCheckBox);
-            AstarFirstDfsSecondCheckBox.CheckedChanged += (s, e) => OnSecondSelectionChanged(SearchAlgorithm.Astar, SearchAlgorithm.Dfs, AstarFirstDfsSecondCheckBox);
-            AstarFirstAstarSecondCheckBox.CheckedChanged += (s, e) => OnSecondSelectionChanged(SearchAlgorithm.Astar, SearchAlgorithm.Astar, AstarFirstAstarSecondCheckBox);
-
-            Run2ndCheckBox_CheckedChanged(this, EventArgs.Empty);
-        }
-
-        void Run2ndCheckBox_CheckedChanged(object? sender, EventArgs e)
-        {
-            SecondAlgorithmTableLayoutPanel.Enabled = Run2ndCheckBox.Checked;
-            if (!Run2ndCheckBox.Checked)
-            {
-                latestSecondSummary.Clear();
-                Bfs2ndTimeLabel.Text = "BFS : ";
-                Dfs2ndTimeLabel.Text = "DFS : ";
-                Astar2ndTimeLabel.Text = "A* : ";
-            }
-        }
-
-        void OnSecondSelectionChanged(SearchAlgorithm first, SearchAlgorithm current, CheckBox source)
-        {
-            if (!source.Checked)
-            {
-                return;
-            }
-
-            foreach (var selector in secondAlgorithmSelectors[first])
-            {
-                if (selector.Key == current)
-                {
-                    continue;
-                }
-                selector.Value.Checked = false;
-            }
-        }
-
-        private bool IsPrimaryAlgorithmChecked(SearchAlgorithm algorithm) => algorithm switch
-        {
-            SearchAlgorithm.Bfs => BfsCheckBox.Checked,
-            SearchAlgorithm.Dfs => DfsCheckBox.Checked,
-            SearchAlgorithm.Astar => AstarCheckBox.Checked,
-            _ => false
-        };
-
-        private SearchAlgorithm? GetSelectedSecondAlgorithm(SearchAlgorithm first)
-        {
-            foreach (var selector in secondAlgorithmSelectors[first])
-            {
-                if (selector.Value.Checked)
-                {
-                    return selector.Key;
-                }
-            }
-            return null;
-        }
-
-        private HashSet<Point> GetVisitedSet(SearchAlgorithm algorithm) => algorithm switch
-        {
-            SearchAlgorithm.Bfs => prevBfsVisited,
-            SearchAlgorithm.Dfs => prevDfsVisited,
-            SearchAlgorithm.Astar => prevAstarVisited,
-            _ => prevBfsVisited
-        };
-
-        private string FormatPrimaryLabel(SearchAlgorithm algorithm)
-        {
-            string prefix = AlgorithmNames[algorithm] + " : ";
-            return latestFirstTimes.TryGetValue(algorithm, out double seconds) ? prefix + seconds + " s" : prefix;
-        }
-
-        private string FormatSecondLabel(SearchAlgorithm first)
-        {
-            string prefix = AlgorithmNames[first] + " : ";
-            if (!Run2ndCheckBox.Checked)
-            {
-                return prefix;
-            }
-
-            return latestSecondSummary.TryGetValue(first, out var summary)
-                ? prefix + AlgorithmNames[summary.second] + " " + summary.time + " s"
-                : prefix;
         }
 
         /// <summary>
@@ -176,21 +60,28 @@ namespace Maze
         /// <returns>이동 경로</returns>
         private List<Point> StartBFS(Player player, MazeCell[,] mazeCells, int width, int height)
         {
+            AlgorithmMetrics metrics = GetAlgorithmMetrics("BFS");
             Queue<Point> bfsQueue = [];
             HashSet<Point> visited = [];
+            Dictionary<Point, Point> parent = [];
 
-            bfsQueue.Enqueue(player.Location);
-            visited.Add(player.Location);
+            Point start = player.Location;
+            Point goal = new(width - 1, height - 1);
+
+            bfsQueue.Enqueue(start);
+            visited.Add(start);
 
             // 큐에 넣은 모든 경로를 저장
             List<Point> bfsMoves = [];
+            int expandedNodes = 0;
 
             while (bfsQueue.Count > 0)
             {
                 Point current = bfsQueue.Dequeue();
                 bfsMoves.Add(current); // 탐색 시도 위치 기록
+                expandedNodes++;
 
-                if (current == new Point(width - 1, height - 1))
+                if (current == goal)
                 {
                     break;
                 }
@@ -204,10 +95,18 @@ namespace Maze
                         if (visited.Add(next))
                         {
                             bfsQueue.Enqueue(next);
+                            parent[next] = current;
                         }
                     }
                 }
             }
+
+            metrics.VisitedNodes = visited.Count;
+            metrics.ExpandedNodes = expandedNodes;
+            List<Point> path = ReconstructPath(parent, start, goal);
+            metrics.PathLength = Math.Max(0, path.Count - 1);
+            metrics.PathTurns = CountTurns(path);
+            metrics.PathCost = metrics.PathLength;
 
             if (Run2ndCheckBox.Checked)
             {
@@ -226,23 +125,35 @@ namespace Maze
         /// <param name="height">높이</param>
         /// <param name="visited1st">1차 탐색 visited</param>
         /// <returns>이동 경로</returns>
-        private static List<Point> Start2ndBFS(Player player, MazeCell[,] mazeCells, int width, int height, HashSet<Point> visited1st)
+        private List<Point> Start2ndBFS(Player player, MazeCell[,] mazeCells, int width, int height, HashSet<Point> visited1st)
         {
+            AlgorithmMetrics metrics = GetAlgorithmMetrics("BFS2");
             Queue<Point> bfsQueue = [];
             HashSet<Point> visited = [];
+            Dictionary<Point, Point> parent = [];
 
-            bfsQueue.Enqueue(player.Location);
-            visited.Add(player.Location);
+            Point start = player.Location;
+            Point goal = new(width - 1, height - 1);
 
-            // 큐에 넣은 모든 경로를 저장
             List<Point> bfsMoves = [];
+
+            if (!visited1st.Contains(start))
+            {
+                return bfsMoves;
+            }
+
+            bfsQueue.Enqueue(start);
+            visited.Add(start);
+
+            int expandedNodes = 0;
 
             while (bfsQueue.Count > 0)
             {
                 Point current = bfsQueue.Dequeue();
                 bfsMoves.Add(current); // 탐색 시도 위치 기록
+                expandedNodes++;
 
-                if (current == new Point(width - 1, height - 1))
+                if (current == goal)
                 {
                     break;
                 }
@@ -253,13 +164,21 @@ namespace Maze
                         !mazeCells[current.X, current.Y].closedSides.Contains((MazeCell.Closed)i))
                     {
                         Point next = new(current.X + directions[i].X, current.Y + directions[i].Y);
-                        if (visited.Add(next) && visited1st.Contains(next))
+                        if (visited1st.Contains(next) && visited.Add(next))
                         {
                             bfsQueue.Enqueue(next);
+                            parent[next] = current;
                         }
                     }
                 }
             }
+
+            metrics.VisitedNodes = visited.Count;
+            metrics.ExpandedNodes = expandedNodes;
+            List<Point> path = ReconstructPath(parent, start, goal);
+            metrics.PathLength = Math.Max(0, path.Count - 1);
+            metrics.PathTurns = CountTurns(path);
+            metrics.PathCost = metrics.PathLength;
 
             return bfsMoves;
         }
@@ -274,20 +193,28 @@ namespace Maze
         /// <returns>이동 경로</returns>
         private List<Point> StartDFS(Player player, MazeCell[,] mazeCells, int width, int height)
         {
+            AlgorithmMetrics metrics = GetAlgorithmMetrics("DFS");
             Stack<Point> dfsStack = [];
             HashSet<Point> visited = [];
+            Dictionary<Point, Point> parent = [];
 
             List<Point> dfsMoves = [];
 
-            dfsStack.Push(player.Location);
-            visited.Add(player.Location);
+            Point start = player.Location;
+            Point goal = new(width - 1, height - 1);
+
+            dfsStack.Push(start);
+            visited.Add(start);
+
+            int expandedNodes = 0;
 
             while (dfsStack.Count > 0)
             {
                 Point current = dfsStack.Pop();
                 dfsMoves.Add(current); // 이동 시도 기록
+                expandedNodes++;
 
-                if (current == new Point(width - 1, height - 1))
+                if (current == goal)
                 {
                     break;
                 }
@@ -301,10 +228,18 @@ namespace Maze
                         if (visited.Add(next))
                         {
                             dfsStack.Push(next);
+                            parent[next] = current;
                         }
                     }
                 }
             }
+
+            metrics.VisitedNodes = visited.Count;
+            metrics.ExpandedNodes = expandedNodes;
+            List<Point> path = ReconstructPath(parent, start, goal);
+            metrics.PathLength = Math.Max(0, path.Count - 1);
+            metrics.PathTurns = CountTurns(path);
+            metrics.PathCost = metrics.PathLength;
 
             if (Run2ndCheckBox.Checked)
             {
@@ -323,22 +258,34 @@ namespace Maze
         /// <param name="height">높이</param>
         /// <param name="visited1st">1차 visited</param>
         /// <returns>이동 경로</returns>
-        private static List<Point> Start2ndDFS(Player player, MazeCell[,] mazeCells, int width, int height, HashSet<Point> visited1st)
+        private List<Point> Start2ndDFS(Player player, MazeCell[,] mazeCells, int width, int height, HashSet<Point> visited1st)
         {
+            AlgorithmMetrics metrics = GetAlgorithmMetrics("DFS2");
             Stack<Point> dfsStack = [];
             HashSet<Point> visited = [];
+            Dictionary<Point, Point> parent = [];
 
             List<Point> dfsMoves = [];
+            Point start = player.Location;
+            Point goal = new(width - 1, height - 1);
 
-            dfsStack.Push(player.Location);
-            visited.Add(player.Location);
+            if (!visited1st.Contains(start))
+            {
+                return dfsMoves;
+            }
+
+            dfsStack.Push(start);
+            visited.Add(start);
+
+            int expandedNodes = 0;
 
             while (dfsStack.Count > 0)
             {
                 Point current = dfsStack.Pop();
                 dfsMoves.Add(current); // 이동 시도 기록
+                expandedNodes++;
 
-                if (current == new Point(width - 1, height - 1))
+                if (current == goal)
                 {
                     break;
                 }
@@ -349,18 +296,21 @@ namespace Maze
                         !mazeCells[current.X, current.Y].closedSides.Contains((MazeCell.Closed)i))
                     {
                         Point next = new(current.X + directions[i].X, current.Y + directions[i].Y);
-                        if (!visited.Contains(next) && visited1st.Contains(next))
+                        if (visited1st.Contains(next) && visited.Add(next))
                         {
                             dfsStack.Push(next);
-                            visited.Add(next);
-                        }
-                        if (visited.Add(next) && visited1st.Contains(next))
-                        {
-                            dfsStack.Push(next);
+                            parent[next] = current;
                         }
                     }
                 }
             }
+
+            metrics.VisitedNodes = visited.Count;
+            metrics.ExpandedNodes = expandedNodes;
+            List<Point> path = ReconstructPath(parent, start, goal);
+            metrics.PathLength = Math.Max(0, path.Count - 1);
+            metrics.PathTurns = CountTurns(path);
+            metrics.PathCost = metrics.PathLength;
 
             return dfsMoves;
         }
@@ -375,8 +325,10 @@ namespace Maze
         /// <returns>이동 경로</returns>
         private List<Point> StartAstar(Player player, MazeCell[,] mazeCells, int width, int height)
         {
+            AlgorithmMetrics metrics = GetAlgorithmMetrics("Astar");
             PriorityQueue<Point, int> openSet = new();
             Dictionary<Point, int> gScore = [];
+            Dictionary<Point, Point> cameFrom = [];
             HashSet<Point> closedSet = [];
             List<Point> astarMoves = [];
 
@@ -403,6 +355,13 @@ namespace Maze
                         prevAstarVisited = closedSet;
                     }
 
+                    metrics.VisitedNodes = closedSet.Count;
+                    metrics.ExpandedNodes = astarMoves.Count;
+                    List<Point> path = ReconstructPath(cameFrom, start, goal);
+                    metrics.PathLength = Math.Max(0, path.Count - 1);
+                    metrics.PathTurns = CountTurns(path);
+                    metrics.PathCost = gScore.TryGetValue(goal, out int cost) ? cost : metrics.PathLength;
+
                     return astarMoves;
                 }
 
@@ -417,12 +376,16 @@ namespace Maze
                         if (!gScore.TryGetValue(next, out int existingGScore) || tentativeGScore < existingGScore)
                         {
                             gScore[next] = tentativeGScore;
+                            cameFrom[next] = current;
                             int priority = tentativeGScore + CalculateManhattanDistance(next, goal);
                             openSet.Enqueue(next, priority);
                         }
                     }
                 }
             }
+
+            metrics.VisitedNodes = closedSet.Count;
+            metrics.ExpandedNodes = astarMoves.Count;
 
             if (Run2ndCheckBox.Checked)
             {
@@ -441,10 +404,12 @@ namespace Maze
         /// <param name="height">높이</param>
         /// <param name="visited1st">1차 visited</param>
         /// <returns>이동 경로</returns>
-        private static List<Point> Start2ndAstar(Player player, MazeCell[,] mazeCells, int width, int height, HashSet<Point> visited1st)
+        private List<Point> Start2ndAstar(Player player, MazeCell[,] mazeCells, int width, int height, HashSet<Point> visited1st)
         {
+            AlgorithmMetrics metrics = GetAlgorithmMetrics("Astar2");
             PriorityQueue<Point, int> openSet = new();
             Dictionary<Point, int> gScore = [];
+            Dictionary<Point, Point> cameFrom = [];
             HashSet<Point> closedSet = [];
             List<Point> astarMoves = [];
 
@@ -471,6 +436,12 @@ namespace Maze
 
                 if (current == goal)
                 {
+                    metrics.VisitedNodes = closedSet.Count;
+                    metrics.ExpandedNodes = astarMoves.Count;
+                    List<Point> path = ReconstructPath(cameFrom, start, goal);
+                    metrics.PathLength = Math.Max(0, path.Count - 1);
+                    metrics.PathTurns = CountTurns(path);
+                    metrics.PathCost = gScore.TryGetValue(goal, out int cost) ? cost : metrics.PathLength;
                     return astarMoves;
                 }
 
@@ -491,12 +462,16 @@ namespace Maze
                         if (!gScore.TryGetValue(next, out int existingGScore) || tentativeGScore < existingGScore)
                         {
                             gScore[next] = tentativeGScore;
+                            cameFrom[next] = current;
                             int priority = tentativeGScore + CalculateManhattanDistance(next, goal);
                             openSet.Enqueue(next, priority);
                         }
                     }
                 }
             }
+
+            metrics.VisitedNodes = closedSet.Count;
+            metrics.ExpandedNodes = astarMoves.Count;
 
             return astarMoves;
         }
@@ -535,7 +510,7 @@ namespace Maze
         /// <param name="players">이동 개체 List</param>
         /// <param name="straightPenalty">직선 이동 delay</param>
         /// <param name="rotationPenalty">회전 이동 delay</param>
-        private void SimulateMove(List<Player> players, int straightPenalty, int rotationPenalty, Dictionary<string, (SearchAlgorithm first, SearchAlgorithm second)>? secondPlayerKeys = null)
+        private void SimulateMove(List<Player> players, int straightPenalty, int rotationPenalty)
         {
             Point?[] previousDirections = new Point?[players.Count];
             Dictionary<string, int> time = [];
@@ -566,7 +541,10 @@ namespace Maze
                             previousDirections[i] = movement;
                         }
                         players[i].Location = nextLocation;
-                        mazeCell[nextLocation.X, nextLocation.Y].PlayerOn(players[i].Color.R, players[i].Color.G, players[i].Color.B);
+                        if (VisualDisplayCheckBox.Checked)
+                        {
+                            mazeCell[nextLocation.X, nextLocation.Y].PlayerOn(players[i].Color.R, players[i].Color.G, players[i].Color.B);
+                        }
                         maxDelay = Math.Max(maxDelay, delay);
                     }
                 }
@@ -592,40 +570,34 @@ namespace Maze
 
                 if (!isPlayerMoved)
                 {
-                    latestFirstTimes.Clear();
-                    if (time.TryGetValue("BFS", out int bfsTime))
+                    BfsTimeLabel.Text = "BFS : " + (BfsCheckBox.Checked ? (time["BFS"] / 1000.0 + " s") : " ");
+                    DfsTimeLabel.Text = "DFS : " + (DfsCheckBox.Checked ? (time["DFS"] / 1000.0 + " s") : " ");
+                    AstarTimeLabel.Text = "A* : " + (AstarCheckBox.Checked ? (time["Astar"] / 1000.0 + " s") : " ");
+
+                    if (Run2ndCheckBox.Checked)
                     {
-                        latestFirstTimes[SearchAlgorithm.Bfs] = bfsTime / 1000.0;
+                        Bfs2ndTimeLabel.Text = "BFS : " + time["BFS2"] / 1000.0 + " s";
+                        Dfs2ndTimeLabel.Text = "DFS : " + time["DFS2"] / 1000.0 + " s";
+                        Astar2ndTimeLabel.Text = "A* : " + (AstarCheckBox.Checked ? (time["Astar2"] / 1000.0 + " s") : " ");
                     }
-                    if (time.TryGetValue("DFS", out int dfsTime))
+                    else
                     {
-                        latestFirstTimes[SearchAlgorithm.Dfs] = dfsTime / 1000.0;
-                    }
-                    if (time.TryGetValue("Astar", out int astarTime))
-                    {
-                        latestFirstTimes[SearchAlgorithm.Astar] = astarTime / 1000.0;
+                        Bfs2ndTimeLabel.Text = "BFS : ";
+                        Dfs2ndTimeLabel.Text = "DFS : ";
+                        Astar2ndTimeLabel.Text = "A* : ";
                     }
 
-                    BfsTimeLabel.Text = FormatPrimaryLabel(SearchAlgorithm.Bfs);
-                    DfsTimeLabel.Text = FormatPrimaryLabel(SearchAlgorithm.Dfs);
-                    AstarTimeLabel.Text = FormatPrimaryLabel(SearchAlgorithm.Astar);
+                    UpdateAlgorithmTime(time, "BFS");
+                    UpdateAlgorithmTime(time, "DFS");
+                    UpdateAlgorithmTime(time, "Astar");
 
-                    latestSecondSummary.Clear();
-                    if (Run2ndCheckBox.Checked && secondPlayerKeys != null && secondPlayerKeys.Count > 0)
+                    if (Run2ndCheckBox.Checked)
                     {
-                        foreach (var entry in secondPlayerKeys)
-                        {
-                            if (!time.TryGetValue(entry.Key, out int value))
-                            {
-                                continue;
-                            }
-                            latestSecondSummary[entry.Value.first] = (entry.Value.second, value / 1000.0);
-                        }
+                        UpdateAlgorithmTime(time, "BFS2");
+                        UpdateAlgorithmTime(time, "DFS2");
+                        UpdateAlgorithmTime(time, "Astar2");
                     }
 
-                    Bfs2ndTimeLabel.Text = FormatSecondLabel(SearchAlgorithm.Bfs);
-                    Dfs2ndTimeLabel.Text = FormatSecondLabel(SearchAlgorithm.Dfs);
-                    Astar2ndTimeLabel.Text = FormatSecondLabel(SearchAlgorithm.Astar);
                     break; // 이동할 수 없을 때 종료
                 }
             }
@@ -803,24 +775,14 @@ namespace Maze
         /// <param name="e">이벤트 인자</param>
         private void RunButton_Click(object sender, EventArgs e)
         {
-            StraightTimePenaltyNumericUpDown.Enabled = false;
-            RotationPenaltyNumericUpDown.Enabled = false;
-            VisualDisplayCheckBox.Enabled = false;
-            DfsCheckBox.Enabled = false;
-            BfsCheckBox.Enabled = false;
-            AstarCheckBox.Enabled = false;
-            Run2ndCheckBox.Enabled = false;
-            SecondAlgorithmTableLayoutPanel.Enabled = false;
-            WriteCheckBox.Enabled = false;
-
             List<Player> players = [];
-            Dictionary<string, (SearchAlgorithm first, SearchAlgorithm second)> secondPlayerKeys = new(StringComparer.Ordinal);
-
             if (!DfsCheckBox.Checked && !BfsCheckBox.Checked && !AstarCheckBox.Checked)
             {
                 MessageBox.Show("알고리즘을 선택해야 합니다.", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
+
+            ResetAlgorithmMetrics();
             if (DfsCheckBox.Checked)
             {
                 Player player = new(Color.Blue, "DFS");
@@ -850,51 +812,32 @@ namespace Maze
 
             if (Run2ndCheckBox.Checked)
             {
-                foreach (SearchAlgorithm firstAlgorithm in Enum.GetValues(typeof(SearchAlgorithm)))
+                if (DfsCheckBox.Checked)
                 {
-                    if (!IsPrimaryAlgorithmChecked(firstAlgorithm))
-                    {
-                        continue;
-                    }
-
-                    SearchAlgorithm? secondSelection = GetSelectedSecondAlgorithm(firstAlgorithm);
-                    if (secondSelection is null)
-                    {
-                        continue;
-                    }
-
-                    HashSet<Point> visited = GetVisitedSet(firstAlgorithm);
-                    if (visited.Count == 0)
-                    {
-                        continue;
-                    }
-
-                    Color color = secondSelection.Value switch
-                    {
-                        SearchAlgorithm.Bfs => Color.Red,
-                        SearchAlgorithm.Dfs => Color.Blue,
-                        SearchAlgorithm.Astar => Color.Green,
-                        _ => Color.Black
-                    };
-                    string playerName = $"2nd:{AlgorithmNames[firstAlgorithm]}->{AlgorithmNames[secondSelection.Value]}";
-                    Player secondPlayer = new(color, playerName);
-                    List<Point> move = secondSelection.Value switch
-                    {
-                        SearchAlgorithm.Bfs => Start2ndBFS(secondPlayer, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, visited),
-                        SearchAlgorithm.Dfs => Start2ndDFS(secondPlayer, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, visited),
-                        SearchAlgorithm.Astar => Start2ndAstar(secondPlayer, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, visited),
-                        _ => []
-                    };
-                    secondPlayer = SimulateMovement(secondPlayer, move, mazeCell);
-                    if (secondPlayer.Path.Count > 0)
-                    {
-                        secondPlayer.Path.RemoveAt(0); // 시작 위치 제외
-                    }
-                    players.Add(secondPlayer);
-                    secondPlayerKeys[playerName] = (firstAlgorithm, secondSelection.Value);
+                    Player player = new(Color.Blue, "DFS2");
+                    List<Point> dfs = Start2ndDFS(player, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, prevDfsVisited);
+                    player = SimulateMovement(player, dfs, mazeCell);
+                    player.Path.RemoveAt(0); // 시작 위치 제외
+                    players.Add(player);
+                }
+                if (BfsCheckBox.Checked)
+                {
+                    Player player = new(Color.Red, "BFS2");
+                    List<Point> bfs = Start2ndBFS(player, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, prevBfsVisited);
+                    player = SimulateMovement(player, bfs, mazeCell);
+                    player.Path.RemoveAt(0); // 시작 위치 제외
+                    players.Add(player);
+                }
+                if (AstarCheckBox.Checked)
+                {
+                    Player player = new(Color.Green, "Astar2");
+                    List<Point> astar = Start2ndAstar(player, mazeCell, (int)SizeNumericUpDown.Value, (int)SizeNumericUpDown.Value, prevAstarVisited);
+                    player = SimulateMovement(player, astar, mazeCell);
+                    player.Path.RemoveAt(0); // 시작 위치 제외
+                    players.Add(player);
                 }
             }
-            SimulateMove(players, (int)StraightTimePenaltyNumericUpDown.Value, (int)RotationPenaltyNumericUpDown.Value, secondPlayerKeys.Count > 0 ? secondPlayerKeys : null);
+            SimulateMove(players, (int)StraightTimePenaltyNumericUpDown.Value, (int)RotationPenaltyNumericUpDown.Value);
 
             if (WriteCheckBox.Checked)
             {
@@ -923,14 +866,18 @@ namespace Maze
 
             int width = mazeCell.GetLength(0);
             int height = mazeCell.GetLength(1);
-            int fork = 0;
-            int deadEnd = 0;
+            int totalCells = width * height;
 
             int[,] openMask = new int[width, height];
-            int[] openDegreeCounts = new int[5];
-            int goalAlignedEdges = 0;
-            int totalOpenEdges = 0;
-            Point goal = new(width - 1, height - 1);
+            bool[,] corridorVisited = new bool[width, height];
+            int corridorCellCount = 0;
+            int cornerCellCount = 0;
+            int corridorSegmentCount = 0;
+            int totalCorridorLength = 0;
+            int deadEndChainSum = 0;
+            int deadEndChainCount = 0;
+            int branchingSum = 0;
+            int branchingSumSquares = 0;
 
             for (int x = 0; x < width; x++)
             {
@@ -947,40 +894,27 @@ namespace Maze
                         }
 
                         mask |= 1 << dir;
-                        totalOpenEdges++;
-
-                        int nx = x + directions[dir].X;
-                        int ny = y + directions[dir].Y;
-                        int currentDistance = Math.Abs(goal.X - x) + Math.Abs(goal.Y - y);
-                        int nextDistance = Math.Abs(goal.X - nx) + Math.Abs(goal.Y - ny);
-                        if (nextDistance < currentDistance)
-                        {
-                            goalAlignedEdges++;
-                        }
                     }
 
                     openMask[x, y] = mask;
 
                     int openCount = CountBits(mask);
-                    if (openCount >= 0 && openCount < openDegreeCounts.Length)
-                    {
-                        openDegreeCounts[openCount]++;
-                    }
+                    branchingSum += openCount;
+                    branchingSumSquares += openCount * openCount;
 
-                    if (cell.closedSides.Count == 1)
+                    if (openCount == 2)
                     {
-                        deadEnd++;
-                    }
-                    else if (cell.closedSides.Count == 3)
-                    {
-                        fork++;
+                        if (IsCorridorMask(mask))
+                        {
+                            corridorCellCount++;
+                        }
+                        else
+                        {
+                            cornerCellCount++;
+                        }
                     }
                 }
             }
-
-            int longestCorridor = 0;
-            int deadEndChainSum = 0;
-            int deadEndChainCount = 0;
 
             for (int x = 0; x < width; x++)
             {
@@ -996,7 +930,7 @@ namespace Maze
                         deadEndChainCount++;
                     }
 
-                    if (IsCorridorMask(mask))
+                    if (IsCorridorMask(mask) && !corridorVisited[x, y])
                     {
                         GetCorridorDirections(mask, out int dirA, out int dirB);
                         int corridorLength =
@@ -1004,57 +938,60 @@ namespace Maze
                             + CountCorridorCellsInDirection(x, y, dirA, openMask, width, height)
                             + CountCorridorCellsInDirection(x, y, dirB, openMask, width, height);
 
-                        if (corridorLength > longestCorridor)
-                        {
-                            longestCorridor = corridorLength;
-                        }
+                        totalCorridorLength += corridorLength;
+                        corridorSegmentCount++;
+                        MarkCorridorCells(x, y, dirA, dirB, openMask, corridorVisited, width, height);
                     }
                 }
             }
 
-            decimal deadEndChainAverage = deadEndChainCount > 0 ? (decimal)deadEndChainSum / deadEndChainCount : 0m;
-            decimal deadEndChainAverageRounded = decimal.Round(deadEndChainAverage, 2, MidpointRounding.AwayFromZero);
-            decimal goalDirectionOpenness = totalOpenEdges > 0 ? (decimal)goalAlignedEdges / totalOpenEdges : 0m;
+            decimal averageCorridorLength = corridorSegmentCount > 0
+                ? decimal.Round((decimal)totalCorridorLength / corridorSegmentCount, 2, MidpointRounding.AwayFromZero)
+                : 0m;
+            decimal deadEndChainAverage = deadEndChainCount > 0
+                ? decimal.Round((decimal)deadEndChainSum / deadEndChainCount, 2, MidpointRounding.AwayFromZero)
+                : 0m;
 
-            latestFirstTimes.TryGetValue(SearchAlgorithm.Bfs, out double bfsSeconds);
-            latestFirstTimes.TryGetValue(SearchAlgorithm.Dfs, out double dfsSeconds);
-            latestFirstTimes.TryGetValue(SearchAlgorithm.Astar, out double astarSeconds);
-
-            List<decimal> rowData =
-            [
-                (decimal)SizeNumericUpDown.Value,
-                (decimal)StraightTimePenaltyNumericUpDown.Value,
-                (decimal)RotationPenaltyNumericUpDown.Value,
-                fork,
-                deadEnd,
-                openDegreeCounts.Length > 1 ? openDegreeCounts[1] : 0,
-                openDegreeCounts.Length > 2 ? openDegreeCounts[2] : 0,
-                openDegreeCounts.Length > 3 ? openDegreeCounts[3] : 0,
-                openDegreeCounts.Length > 4 ? openDegreeCounts[4] : 0,
-                longestCorridor,
-                deadEndChainAverageRounded,
-                goalDirectionOpenness,
-                Convert.ToDecimal(bfsSeconds),
-                Convert.ToDecimal(dfsSeconds),
-                Convert.ToDecimal(astarSeconds)
-            ];
-
-            if (Run2ndCheckBox.Checked)
+            decimal branchingStd = 0m;
+            if (totalCells > 0)
             {
-                rowData.Add(latestSecondSummary.TryGetValue(SearchAlgorithm.Bfs, out var bfsSecond) ? Convert.ToDecimal(bfsSecond.time) : 0m);
-                rowData.Add(latestSecondSummary.TryGetValue(SearchAlgorithm.Dfs, out var dfsSecond) ? Convert.ToDecimal(dfsSecond.time) : 0m);
-                rowData.Add(latestSecondSummary.TryGetValue(SearchAlgorithm.Astar, out var astarSecond) ? Convert.ToDecimal(astarSecond.time) : 0m);
+                double mean = (double)branchingSum / totalCells;
+                double meanSquare = (double)branchingSumSquares / totalCells;
+                double variance = Math.Max(0.0, meanSquare - mean * mean);
+                branchingStd = decimal.Round((decimal)Math.Sqrt(variance), 4, MidpointRounding.AwayFromZero);
+            }
+
+            var (shortestPathLength, shortestPathTurns, _) = ComputeShortestPathMetrics(mazeCell);
+
+            decimal straightPenalty = (decimal)StraightTimePenaltyNumericUpDown.Value;
+            decimal rotationPenalty = (decimal)RotationPenaltyNumericUpDown.Value;
+            decimal timePenaltyRatio = straightPenalty > 0m
+                ? decimal.Round(rotationPenalty / straightPenalty, 4, MidpointRounding.AwayFromZero)
+                : 0m;
+
+            List<string> rowValues = new(StructuralMetricHeaders.Length + PrimaryAlgorithmKeys.Length)
+            {
+                FormatInvariant((decimal)SizeNumericUpDown.Value),
+                FormatInvariant(timePenaltyRatio),
+                FormatInvariant(averageCorridorLength),
+                FormatInvariant(branchingStd),
+                FormatInvariant(cornerCellCount),
+                FormatInvariant(corridorCellCount),
+                FormatInvariant(deadEndChainCount),
+                FormatInvariant(deadEndChainAverage),
+                FormatInvariant(shortestPathLength),
+                FormatInvariant(shortestPathTurns)
+            };
+
+            foreach (string algorithmKey in PrimaryAlgorithmKeys)
+            {
+                AppendAlgorithmMetrics(rowValues, algorithmKey);
             }
 
             try
             {
                 using StreamWriter sw = new(csvFilePath, append: true);
-                string[] formattedRow = new string[rowData.Count];
-                for (int i = 0; i < rowData.Count; i++)
-                {
-                    formattedRow[i] = rowData[i].ToString(System.Globalization.CultureInfo.InvariantCulture);
-                }
-                sw.WriteLine(string.Join(",", formattedRow));
+                sw.WriteLine(string.Join(",", rowValues));
             }
             catch (Exception ex)
             {
@@ -1062,6 +999,250 @@ namespace Maze
                 System.Diagnostics.Process.Start("explorer.exe", csvFilePath);
             }
         }
+
+		private void ResetAlgorithmMetrics()
+		{
+			latestAlgorithmMetrics.Clear();
+			foreach (string key in PrimaryAlgorithmKeys)
+			{
+				latestAlgorithmMetrics[key] = new AlgorithmMetrics(key);
+			}
+
+			foreach (string key in SecondaryAlgorithmKeys)
+			{
+				latestAlgorithmMetrics[key] = new AlgorithmMetrics(key);
+			}
+		}
+
+		private AlgorithmMetrics GetAlgorithmMetrics(string key)
+		{
+			if (!latestAlgorithmMetrics.TryGetValue(key, out var metrics))
+			{
+				metrics = new AlgorithmMetrics(key);
+				latestAlgorithmMetrics[key] = metrics;
+			}
+
+			metrics.ResetSearchMetrics();
+			return metrics;
+		}
+
+		private static string BuildCsvHeader()
+		{
+			List<string> headers = [.. StructuralMetricHeaders];
+			headers.AddRange(PrimaryAlgorithmKeys);
+			return string.Join(",", headers);
+		}
+
+		private void AppendAlgorithmMetrics(List<string> rowValues, string algorithmKey)
+		{
+			if (!latestAlgorithmMetrics.TryGetValue(algorithmKey, out var metrics))
+			{
+				metrics = new AlgorithmMetrics(algorithmKey);
+				latestAlgorithmMetrics[algorithmKey] = metrics;
+			}
+
+			rowValues.Add(FormatInvariant(metrics.TimeSeconds));
+		}
+
+		private void UpdateAlgorithmTime(Dictionary<string, int> elapsedMilliseconds, string key)
+		{
+			if (!elapsedMilliseconds.TryGetValue(key, out int milliseconds))
+			{
+				return;
+			}
+
+			if (!latestAlgorithmMetrics.TryGetValue(key, out var metrics))
+			{
+				metrics = new AlgorithmMetrics(key);
+				latestAlgorithmMetrics[key] = metrics;
+			}
+
+			metrics.TimeSeconds = milliseconds / 1000.0;
+		}
+
+		private static string FormatInvariant(int value) => value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+		private static string FormatInvariant(decimal value) => value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+		private static string FormatInvariant(double value)
+		{
+			if (double.IsNaN(value) || double.IsInfinity(value))
+			{
+				return "0";
+			}
+			return Math.Round(value, 6).ToString(System.Globalization.CultureInfo.InvariantCulture);
+		}
+
+		private static List<Point> ReconstructPath(Dictionary<Point, Point> parent, Point start, Point goal)
+		{
+			List<Point> path = [];
+
+			if (start == goal)
+			{
+				path.Add(start);
+				return path;
+			}
+
+			if (!parent.ContainsKey(goal))
+			{
+				return path;
+			}
+
+			Point current = goal;
+			path.Add(current);
+
+			while (current != start)
+			{
+				if (!parent.TryGetValue(current, out Point previous))
+				{
+					return [];
+				}
+
+				current = previous;
+				path.Add(current);
+			}
+
+			path.Reverse();
+			return path;
+		}
+
+		private static int CountTurns(System.Collections.Generic.List<Point> path)
+		{
+            ArgumentNullException.ThrowIfNull(path);
+            if (path.Count < 3)
+			{
+				return 0;
+			}
+
+			int turns = 0;
+			Point previousDirection = new(path[1].X - path[0].X, path[1].Y - path[0].Y);
+
+			for (int i = 2; i < path.Count; i++)
+			{
+				Point direction = new(path[i].X - path[i - 1].X, path[i].Y - path[i - 1].Y);
+				if (direction != previousDirection)
+				{
+					turns++;
+				}
+				previousDirection = direction;
+			}
+
+			return turns;
+		}
+
+		private static (int PathLength, int TurnCount, int ReachableCells) ComputeShortestPathMetrics(MazeCell[,] mazeCells)
+		{
+			int width = mazeCells.GetLength(0);
+			int height = mazeCells.GetLength(1);
+
+			Point start = new(0, 0);
+			Point goal = new(width - 1, height - 1);
+
+			Queue<Point> queue = [];
+			HashSet<Point> visited = [];
+			Dictionary<Point, Point> parent = [];
+
+			queue.Enqueue(start);
+			visited.Add(start);
+
+			while (queue.Count > 0)
+			{
+				Point current = queue.Dequeue();
+
+				for (int dir = 0; dir < directions.Length; dir++)
+				{
+					if (mazeCells[current.X, current.Y].isNotConnected[dir] ||
+						mazeCells[current.X, current.Y].closedSides.Contains((MazeCell.Closed)dir))
+					{
+						continue;
+					}
+
+					Point next = new(current.X + directions[dir].X, current.Y + directions[dir].Y);
+					if (visited.Add(next))
+					{
+						parent[next] = current;
+						queue.Enqueue(next);
+					}
+				}
+			}
+
+			if (!parent.ContainsKey(goal) && start != goal)
+			{
+				return (0, 0, visited.Count);
+			}
+
+			List<Point> path = ReconstructPath(parent, start, goal);
+			int pathLength = Math.Max(0, path.Count - 1);
+			int turnCount = CountTurns(path);
+
+			return (pathLength, turnCount, visited.Count);
+		}
+
+		private static void MarkCorridorCells(int startX, int startY, int dirA, int dirB, int[,] openMask, bool[,] visited, int width, int height)
+		{
+			visited[startX, startY] = true;
+			MarkCorridorCellsInDirection(startX, startY, dirA, openMask, visited, width, height);
+			MarkCorridorCellsInDirection(startX, startY, dirB, openMask, visited, width, height);
+		}
+
+		private static void MarkCorridorCellsInDirection(int startX, int startY, int direction, int[,] openMask, bool[,] visited, int width, int height)
+		{
+			int currentX = startX;
+			int currentY = startY;
+
+			while ((openMask[currentX, currentY] & (1 << direction)) != 0)
+			{
+				int nextX = currentX + directions[direction].X;
+				int nextY = currentY + directions[direction].Y;
+
+				if (nextX < 0 || nextX >= width || nextY < 0 || nextY >= height)
+				{
+					break;
+				}
+
+				int nextMask = openMask[nextX, nextY];
+				if ((nextMask & (1 << ((direction + 2) % 4))) == 0 || !IsCorridorMask(nextMask))
+				{
+					break;
+				}
+
+				currentX = nextX;
+				currentY = nextY;
+				if (visited[currentX, currentY])
+				{
+					continue;
+				}
+
+				visited[currentX, currentY] = true;
+			}
+		}
+
+		private sealed class AlgorithmMetrics
+		{
+			public AlgorithmMetrics(string name)
+			{
+				Name = name;
+				ResetSearchMetrics();
+				TimeSeconds = 0;
+			}
+
+			public string Name { get; }
+			public int VisitedNodes { get; set; }
+			public int ExpandedNodes { get; set; }
+			public int PathLength { get; set; }
+			public int PathTurns { get; set; }
+			public double PathCost { get; set; }
+			public double TimeSeconds { get; set; }
+
+			public void ResetSearchMetrics()
+			{
+				VisitedNodes = 0;
+				ExpandedNodes = 0;
+				PathLength = 0;
+				PathTurns = 0;
+				PathCost = 0;
+			}
+		}
 
         /// <summary>
         /// 1인 비트 수 계산
@@ -1082,10 +1263,10 @@ namespace Maze
         }
 
         /// <summary>
-        /// 비트 마스크의 직선 복도 형태 판별
+        /// 주어진 비트 마스크가 직선 복도 형태인지 판별합니다.
         /// </summary>
-        /// <param name="mask">비트 마스크</param>
-        /// <returns>직선 복도 true 아니면 false</returns>
+        /// <param name="mask">셀의 네 방향 개방 여부를 나타내는 비트 마스크</param>
+        /// <returns>직선 복도라면 true, 아니면 false</returns>
         private static bool IsCorridorMask(int mask)
         {
             bool top = (mask & (1 << 0)) != 0;
@@ -1097,11 +1278,11 @@ namespace Maze
         }
 
         /// <summary>
-        /// 직선 복도 마스크가 가리키는 두 방향 인덱스 반환
+        /// 직선 복도 마스크가 가리키는 두 방향 인덱스를 반환합니다.
         /// </summary>
-        /// <param name="mask">비트 마스크</param>
-        /// <param name="dirA">1 개방 방향 인덱스</param>
-        /// <param name="dirB">2 개방 방향 인덱스</param>
+        /// <param name="mask">현재 셀의 개방 방향을 나타내는 비트 마스크</param>
+        /// <param name="dirA">첫 번째 개방 방향 인덱스</param>
+        /// <param name="dirB">두 번째 개방 방향 인덱스</param>
         private static void GetCorridorDirections(int mask, out int dirA, out int dirB)
         {
             if ((mask & (1 << 0)) != 0)
@@ -1117,14 +1298,14 @@ namespace Maze
         }
 
         /// <summary>
-        /// 특정 방향 직선 길이 계산
+        /// 특정 방향으로 이어지는 직선 복도의 길이를 계산합니다.
         /// </summary>
         /// <param name="startX">시작 X 좌표</param>
         /// <param name="startY">시작 Y 좌표</param>
         /// <param name="direction">이동할 방향 인덱스</param>
-        /// <param name="openMask">비트 마스크</param>
-        /// <param name="width">너비</param>
-        /// <param name="height">높이</param>
+        /// <param name="openMask">셀별 개방 상태 비트 마스크 배열</param>
+        /// <param name="width">미로 너비</param>
+        /// <param name="height">미로 높이</param>
         /// <returns>연속된 복도 셀 수</returns>
         private static int CountCorridorCellsInDirection(int startX, int startY, int direction, int[,] openMask, int width, int height)
         {
@@ -1167,13 +1348,13 @@ namespace Maze
         }
 
         /// <summary>
-        /// 막다른 셀에서 갈림길 만날 때까지 체인 깊이 계산
+        /// 막다른 셀에서 갈림길을 만날 때까지의 체인 깊이를 계산합니다.
         /// </summary>
         /// <param name="startX">시작 X 좌표</param>
         /// <param name="startY">시작 Y 좌표</param>
-        /// <param name="openMask">비트 마스크</param>
-        /// <param name="width">너비</param>
-        /// <param name="height">높이</param>
+        /// <param name="openMask">셀별 개방 상태 비트 마스크 배열</param>
+        /// <param name="width">미로 너비</param>
+        /// <param name="height">미로 높이</param>
         /// <returns>막다른길 체인 길이</returns>
         private static int ComputeDeadEndChainDepth(int startX, int startY, int[,] openMask, int width, int height)
         {
@@ -1307,16 +1488,16 @@ namespace Maze
                     {
                         Directory.CreateDirectory(dataFolderPath);
                     }
-                    if (!File.Exists(csvDataFilePath))
-                    {
-                        using StreamWriter sw = new(csvDataFilePath, append: false);
-                        sw.WriteLine("Size,StraightTimePenalty,RotationPenalty,Fork,DeadEnd,BranchDeg1,BranchDeg2,BranchDeg3,BranchDeg4,LongestStraightCorridor,DeadEndChainDepthAvg,DeadEndChainDepthMax,GoalDirectionOpenness,BFS,DFS,Astar");
-                    }
-                    if (!File.Exists(csv2ndDataFilePath))
-                    {
-                        using StreamWriter sw = new(csv2ndDataFilePath, append: false);
-                        sw.WriteLine("Size,StraightTimePenalty,RotationPenalty,Fork,DeadEnd,BranchDeg1,BranchDeg2,BranchDeg3,BranchDeg4,LongestStraightCorridor,DeadEndChainDepthAvg,DeadEndChainDepthMax,GoalDirectionOpenness,BFS,DFS,Astar,BFS_2nd,DFS_2nd,Astar_2nd");
-                    }
+					if (!File.Exists(csvDataFilePath))
+					{
+						using StreamWriter sw = new(csvDataFilePath, append: false);
+						sw.WriteLine(BuildCsvHeader());
+					}
+					if (!File.Exists(csv2ndDataFilePath))
+					{
+						using StreamWriter sw = new(csv2ndDataFilePath, append: false);
+						sw.WriteLine(BuildCsvHeader());
+					}
                 }
                 catch (Exception ex)
                 {
@@ -1527,11 +1708,11 @@ namespace Maze
         public bool IsWallClosed(Closed closed) => closedSides.Contains(closed);
 
         /// <summary>
-        /// player 위치 색칠
+        /// 플레이어가 있는 영역을 지정된 색상으로 음영 처리합니다.
         /// </summary>
-        /// <param name="R">R</param>
-        /// <param name="G">G</param>
-        /// <param name="B">B</param>
+        /// <param name="R">강조 색상의 빨강 채널 값</param>
+        /// <param name="G">강조 색상의 초록 채널 값</param>
+        /// <param name="B">강조 색상의 파랑 채널 값</param>
         public void PlayerOn(int R, int G, int B)
 		{
 			using (Graphics g = Graphics.FromImage(bitmap))

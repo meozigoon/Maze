@@ -30,19 +30,16 @@ predict_faster_algorithm = maze_model.predict_faster_algorithm
 
 DEFAULT_CHECKPOINT_PATH = THIS_DIR / "artifacts" / "maze_predictor.pt"
 EXAMPLE_FEATURES: Dict[str, float] = {
-    "Size": 10,
-    "StraightTimePenalty": 100,
-    "RotationPenalty": 150,
-    "Fork": 13,
-    "DeadEnd": 11,
-    "BranchDeg1": 11,
-    "BranchDeg2": 80,
-    "BranchDeg3": 9,
-    "BranchDeg4": 0,
-    "LongestStraightCorridor": 5,
-    "DeadEndChainDepthAvg": 4.55,
-    "DeadEndChainDepthMax": 20,
-    "GoalDirectionOpenness": 0.5,
+    "Size": 20,
+    "TimePenaltyRatio": 1.5,
+    "AverageCorridorLength": 4.2,
+    "BranchingFactorStd": 0.75,
+    "CornerCellCount": 140,
+    "CorridorCellCount": 180,
+    "DeadEndChainCount": 36,
+    "DeadEndChainDepthAvg": 3.4,
+    "ShortestPathLength": 110,
+    "ShortestPathTurns": 28,
 }
 
 
